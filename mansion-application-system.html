@@ -1,0 +1,361 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マンション買取申請システム</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Hiragino Sans', 'Yu Gothic', sans-serif; background: #f5f7fa; color: #1a1a2e; line-height: 1.6; }
+.container { max-width: 900px; margin: 0 auto; padding: 20px; }
+header { background: linear-gradient(135deg, #2c3e50 0%, #3498db 100%); color: #fff; padding: 20px 30px; border-radius: 12px; margin-bottom: 24px; display: flex; justify-content: space-between; align-items: center; }
+header h1 { font-size: 1.5rem; font-weight: 600; }
+.user-info { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; }
+.user-info span { background: rgba(255,255,255,0.15); padding: 6px 14px; border-radius: 20px; }
+.card { background: #fff; border-radius: 12px; padding: 24px; margin-bottom: 20px; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+.card-title { font-size: 1.1rem; font-weight: 600; color: #1a1a2e; margin-bottom: 20px; padding-bottom: 16px; border-bottom: 1px solid #eee; }
+.form-group { margin-bottom: 20px; }
+.form-label { display: block; font-size: 0.9rem; font-weight: 600; color: #555; margin-bottom: 8px; }
+.form-label .required { color: #e74c3c; margin-left: 4px; }
+.form-input, .form-select, .form-textarea { width: 100%; padding: 12px 14px; border: 1px solid #ddd; border-radius: 8px; font-size: 0.95rem; font-family: inherit; transition: border-color 0.2s; }
+.form-input:focus, .form-select:focus, .form-textarea:focus { outline: none; border-color: #3498db; }
+.form-textarea { resize: vertical; min-height: 100px; }
+.form-row { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form-row-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 16px; }
+.input-with-unit { display: flex; align-items: center; gap: 8px; }
+.input-with-unit input { flex: 1; }
+.input-with-unit .unit { font-size: 0.9rem; color: #666; white-space: nowrap; }
+.section-title { font-size: 1rem; font-weight: 600; margin: 24px 0 16px; padding-left: 12px; border-left: 4px solid #3498db; }
+.price-summary { background: linear-gradient(135deg, #f8f9fa 0%, #fff 100%); border-radius: 12px; padding: 20px; border: 1px solid #eee; margin-top: 20px; }
+.price-row { display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #f0f0f0; }
+.price-row:last-child { border-bottom: none; }
+.price-row.total { border-top: 2px solid #1a1a2e; border-bottom: none; margin-top: 8px; padding-top: 16px; font-weight: 700; font-size: 1.1rem; }
+.price-row .label { color: #666; }
+.price-row .value { font-weight: 600; }
+.price-row .value.highlight { color: #e74c3c; }
+.price-row .value.profit { color: #27ae60; }
+.btn-group { display: flex; gap: 12px; margin-top: 24px; }
+.btn { padding: 14px 32px; border: none; border-radius: 8px; font-size: 1rem; font-weight: 600; cursor: pointer; transition: all 0.2s; }
+.btn-primary { background: #3498db; color: #fff; }
+.btn-primary:hover { background: #2980b9; }
+.btn-secondary { background: #f8f9fa; color: #666; }
+.btn-secondary:hover { background: #e8ecf1; }
+.btn-draft { background: #fff; color: #3498db; border: 2px solid #3498db; }
+.btn-draft:hover { background: #f0f7ff; }
+.helper-text { font-size: 0.8rem; color: #999; margin-top: 4px; }
+.auto-calc { background: #f0f7ff; border: 1px solid #3498db; }
+.expense-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+.expense-item { display: flex; justify-content: space-between; align-items: center; padding: 10px 14px; background: #f8f9fa; border-radius: 6px; font-size: 0.9rem; }
+.expense-item .label { color: #666; }
+.expense-item .value { font-weight: 600; }
+.tabs { display: flex; gap: 8px; margin-bottom: 24px; }
+.tab { padding: 12px 24px; background: #fff; border: none; border-radius: 8px; cursor: pointer; font-size: 0.95rem; color: #666; }
+.tab.active { background: #3498db; color: #fff; }
+.status-badge { display: inline-block; padding: 4px 12px; border-radius: 20px; font-size: 0.8rem; font-weight: 500; }
+.status-draft { background: #e8ecf1; color: #666; }
+.status-pending { background: #fff3cd; color: #856404; }
+.status-approved { background: #d4edda; color: #155724; }
+.status-rejected { background: #f8d7da; color: #721c24; }
+.history-item { display: flex; justify-content: space-between; align-items: center; padding: 16px; background: #fff; border-radius: 10px; border: 1px solid #eee; margin-bottom: 12px; }
+.history-info h3 { font-size: 0.95rem; margin-bottom: 4px; }
+.history-meta { font-size: 0.85rem; color: #666; }
+.history-price { font-size: 1rem; font-weight: 700; color: #e74c3c; }
+@media (max-width: 768px) { 
+  .form-row, .form-row-3 { grid-template-columns: 1fr; } 
+  .expense-grid { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+<div class="container">
+  <header>
+    <h1>📝 マンション買取申請システム</h1>
+    <div class="user-info">
+      <span>👤 狩野内 豊（営業１課）</span>
+      <span>📅 2024/12/19</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab active">新規申請</button>
+    <button class="tab">申請履歴<span style="background:#e74c3c;color:#fff;font-size:0.7rem;padding:2px 6px;border-radius:10px;margin-left:6px;">2</span></button>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📋 物件情報</div>
+    
+    <div class="form-group">
+      <label class="form-label">物件名（マンション名）<span class="required">*</span></label>
+      <input type="text" class="form-input" placeholder="例：芝浦アイランドグローヴタワー" value="芝浦アイランドグローヴタワー">
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">部屋番号<span class="required">*</span></label>
+        <input type="text" class="form-input" placeholder="例：505" value="505">
+      </div>
+      <div class="form-group">
+        <label class="form-label">所在階</label>
+        <input type="text" class="form-input" placeholder="例：16階" value="16階">
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">所在地<span class="required">*</span></label>
+      <input type="text" class="form-input" placeholder="例：東京都港区芝浦4丁目" value="東京都港区芝浦4丁目">
+    </div>
+    
+    <div class="form-row-3">
+      <div class="form-group">
+        <label class="form-label">専有面積<span class="required">*</span></label>
+        <div class="input-with-unit">
+          <input type="number" class="form-input" placeholder="74.31" value="74.31" id="area">
+          <span class="unit">㎡</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">間取り<span class="required">*</span></label>
+        <select class="form-select" id="madori">
+          <option value="">選択してください</option>
+          <option value="1LDK">1LDK</option>
+          <option value="2LDK" selected>2LDK</option>
+          <option value="3LDK">3LDK</option>
+          <option value="4LDK">4LDK</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">築年月<span class="required">*</span></label>
+        <input type="month" class="form-input" value="2006-11">
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">💰 価格情報</div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">リスト価格（売出価格）<span class="required">*</span></label>
+        <div class="input-with-unit">
+          <input type="number" class="form-input" placeholder="19800" value="19800" id="listPrice" oninput="calculateAll()">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">指値（買取希望価格）<span class="required">*</span></label>
+        <div class="input-with-unit">
+          <input type="number" class="form-input" placeholder="19280" value="19280" id="bidPrice" oninput="calculateAll()">
+          <span class="unit">万円</span>
+        </div>
+        <div class="helper-text" id="bidDiff">リスト価格との差額: -520万円（-2.6%）</div>
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">想定再販価格<span class="required">*</span></label>
+        <div class="input-with-unit">
+          <input type="number" class="form-input" placeholder="23500" value="23500" id="resalePrice" oninput="calculateAll()">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+      <div class="form-group">
+        <label class="form-label">リノベーション費用（税込）</label>
+        <div class="input-with-unit">
+          <input type="number" class="form-input" placeholder="800" value="800" id="renovationCost" oninput="calculateAll()">
+          <span class="unit">万円</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="section-title">📊 経費自動計算</div>
+    <div class="expense-grid">
+      <div class="expense-item"><span class="label">仲介手数料（買）</span><span class="value" id="buyFee">642万円</span></div>
+      <div class="expense-item"><span class="label">仲介手数料（売）</span><span class="value" id="sellFee">777万円</span></div>
+      <div class="expense-item"><span class="label">登記費用</span><span class="value" id="registrationFee">150万円</span></div>
+      <div class="expense-item"><span class="label">不動産取得税</span><span class="value" id="acquisitionTax">290万円</span></div>
+      <div class="expense-item"><span class="label">印紙税</span><span class="value" id="stampTax">12万円</span></div>
+      <div class="expense-item"><span class="label">金利（6ヶ月・年利3%）</span><span class="value" id="interestCost">289万円</span></div>
+      <div class="expense-item"><span class="label">その他（管理費等6ヶ月）</span><span class="value" id="otherCost">140万円</span></div>
+      <div class="expense-item"><span class="label">リノベーション費用</span><span class="value" id="renoCost">800万円</span></div>
+    </div>
+
+    <div class="price-summary">
+      <div class="price-row">
+        <span class="label">指値（買取価格）</span>
+        <span class="value highlight" id="summaryBid">19,280万円</span>
+      </div>
+      <div class="price-row">
+        <span class="label">再販概算経費合計</span>
+        <span class="value" id="summaryExpense">3,100万円</span>
+      </div>
+      <div class="price-row">
+        <span class="label">想定再販価格</span>
+        <span class="value" id="summaryResale">23,500万円</span>
+      </div>
+      <div class="price-row total">
+        <span class="label">想定粗利</span>
+        <span class="value profit" id="summaryProfit">1,120万円（4.8%）</span>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">🏢 仲介会社情報</div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">仲介会社名<span class="required">*</span></label>
+        <input type="text" class="form-input" placeholder="例：大成有楽不動産販売（株）" value="大成有楽不動産販売（株）">
+      </div>
+      <div class="form-group">
+        <label class="form-label">担当者名</label>
+        <input type="text" class="form-input" placeholder="例：山田 太郎" value="鈴木 一郎">
+      </div>
+    </div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">電話番号</label>
+        <input type="tel" class="form-input" placeholder="例：03-1234-5678" value="03-3764-6881">
+      </div>
+      <div class="form-group">
+        <label class="form-label">取引態様</label>
+        <select class="form-select">
+          <option value="">選択してください</option>
+          <option value="専任" selected>専任</option>
+          <option value="一般">一般</option>
+          <option value="専属">専属</option>
+          <option value="売主">売主</option>
+        </select>
+      </div>
+    </div>
+  </div>
+
+  <div class="card">
+    <div class="card-title">📝 売主情報・特記事項</div>
+    
+    <div class="form-row">
+      <div class="form-group">
+        <label class="form-label">売却理由</label>
+        <select class="form-select">
+          <option value="">選択してください</option>
+          <option value="転勤" selected>転勤</option>
+          <option value="住み替え">住み替え</option>
+          <option value="相続">相続</option>
+          <option value="離婚">離婚</option>
+          <option value="資金需要">資金需要</option>
+          <option value="その他">その他</option>
+        </select>
+      </div>
+      <div class="form-group">
+        <label class="form-label">売主の希望スケジュール</label>
+        <select class="form-select">
+          <option value="">選択してください</option>
+          <option value="急ぎ" selected>急ぎ（1ヶ月以内）</option>
+          <option value="通常">通常（2〜3ヶ月）</option>
+          <option value="余裕あり">余裕あり（3ヶ月以上）</option>
+        </select>
+      </div>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">室内状況</label>
+      <select class="form-select">
+        <option value="">選択してください</option>
+        <option value="良好" selected>良好（軽微なリフォームで可）</option>
+        <option value="普通">普通（一般的なリノベーション必要）</option>
+        <option value="要大規模">要大規模リノベーション</option>
+      </select>
+    </div>
+    
+    <div class="form-group">
+      <label class="form-label">申請コメント・特記事項</label>
+      <textarea class="form-textarea" placeholder="価格交渉の余地、物件の特徴、懸念点など自由に記載してください">オーナー様は転勤に伴う売却。早期売却を希望されており、価格交渉の余地あり。室内状態は良好で、リノベーション費用は想定内。タワーマンションとして人気が高く、再販時の需要は堅調と予想。</textarea>
+    </div>
+  </div>
+
+  <div class="btn-group">
+    <button class="btn btn-primary" onclick="submitApplication()">📤 承認申請する</button>
+    <button class="btn btn-draft">💾 下書き保存</button>
+    <button class="btn btn-secondary">キャンセル</button>
+  </div>
+</div>
+
+<script>
+function calculateAll() {
+  var area = parseFloat(document.getElementById('area').value) || 0;
+  var listPrice = parseFloat(document.getElementById('listPrice').value) || 0;
+  var bidPrice = parseFloat(document.getElementById('bidPrice').value) || 0;
+  var resalePrice = parseFloat(document.getElementById('resalePrice').value) || 0;
+  var renovationCost = parseFloat(document.getElementById('renovationCost').value) || 0;
+  
+  // 指値との差額
+  var diff = bidPrice - listPrice;
+  var diffPercent = listPrice > 0 ? ((diff / listPrice) * 100).toFixed(1) : 0;
+  document.getElementById('bidDiff').textContent = 'リスト価格との差額: ' + diff.toLocaleString() + '万円（' + diffPercent + '%）';
+  
+  // 仲介手数料（買）: (価格×3%+6万)×1.1
+  var buyFee = Math.round((bidPrice * 0.03 + 6) * 1.1);
+  document.getElementById('buyFee').textContent = buyFee.toLocaleString() + '万円';
+  
+  // 仲介手数料（売）: (価格×3%+6万)×1.1
+  var sellFee = Math.round((resalePrice * 0.03 + 6) * 1.1);
+  document.getElementById('sellFee').textContent = sellFee.toLocaleString() + '万円';
+  
+  // 登記費用（概算）
+  var registrationFee = 150;
+  document.getElementById('registrationFee').textContent = registrationFee + '万円';
+  
+  // 不動産取得税（概算: 価格の1.5%程度）
+  var acquisitionTax = Math.round(bidPrice * 0.015);
+  document.getElementById('acquisitionTax').textContent = acquisitionTax.toLocaleString() + '万円';
+  
+  // 印紙税
+  var stampTax = 12;
+  if (bidPrice < 10000) stampTax = 6;
+  if (bidPrice >= 50000) stampTax = 18;
+  document.getElementById('stampTax').textContent = stampTax + '万円';
+  
+  // 金利（年利3%、6ヶ月）
+  var interestCost = Math.round(bidPrice * 0.03 * 0.5);
+  document.getElementById('interestCost').textContent = interestCost.toLocaleString() + '万円';
+  
+  // その他（管理費等6ヶ月）
+  var otherCost = 140;
+  document.getElementById('otherCost').textContent = otherCost + '万円';
+  
+  // リノベーション費用
+  document.getElementById('renoCost').textContent = renovationCost.toLocaleString() + '万円';
+  
+  // 経費合計
+  var totalExpense = buyFee + sellFee + registrationFee + acquisitionTax + stampTax + interestCost + otherCost + renovationCost;
+  
+  // 粗利
+  var profit = resalePrice - bidPrice - totalExpense;
+  var profitPercent = resalePrice > 0 ? ((profit / resalePrice) * 100).toFixed(1) : 0;
+  
+  // サマリー更新
+  document.getElementById('summaryBid').textContent = bidPrice.toLocaleString() + '万円';
+  document.getElementById('summaryExpense').textContent = totalExpense.toLocaleString() + '万円';
+  document.getElementById('summaryResale').textContent = resalePrice.toLocaleString() + '万円';
+  document.getElementById('summaryProfit').textContent = profit.toLocaleString() + '万円（' + profitPercent + '%）';
+  
+  // 粗利がマイナスの場合は赤色に
+  var profitEl = document.getElementById('summaryProfit');
+  if (profit < 0) {
+    profitEl.style.color = '#e74c3c';
+  } else {
+    profitEl.style.color = '#27ae60';
+  }
+}
+
+function submitApplication() {
+  alert('承認申請を送信しました！\\n\\n上長（山田部長）に承認依頼が通知されます。');
+}
+
+// 初期計算
+calculateAll();
+</script>
+</body>
+</html>

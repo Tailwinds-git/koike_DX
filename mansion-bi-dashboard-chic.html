@@ -1,0 +1,2753 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>マンション買取承認システム - BI Dashboard</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+JP:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  /* ベースカラー - ダークグレー */
+  --bg-dark: #1c1c1e;
+  --bg-card: #2c2c2e;
+  --bg-card-hover: #3a3a3c;
+  --border: #48484a;
+  --text: #f5f5f7;
+  --text-muted: #98989d;
+  
+  /* シックなアクセントカラー */
+  --gold: #c9a962;
+  --gold-light: #d4bc7a;
+  --silver: #a1a1a6;
+  --blue-gray: #6e7b8b;
+  --warm-white: #faf8f5;
+  
+  /* 補助色 */
+  --success: #34c759;
+  --warning: #ff9f0a;
+  --danger: #ff453a;
+  --info: #64d2ff;
+  --accent: #c9a962;
+  --primary: #2c2c2e;
+  --primary-light: #3a3a3c;
+  
+  /* シャドウ */
+  --shadow: 0 4px 12px rgba(0,0,0,0.3);
+  --shadow-lg: 0 8px 24px rgba(0,0,0,0.4);
+}
+
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { 
+  font-family: 'Noto Sans JP', sans-serif; 
+  background: var(--bg-dark); 
+  color: var(--text); 
+  line-height: 1.6; 
+}
+
+.container { max-width: 1400px; margin: 0 auto; padding: 20px; }
+
+/* Header */
+header { 
+  background: var(--bg-card);
+  border: 1px solid var(--border);
+  color: var(--text); 
+  padding: 20px 30px; 
+  border-radius: 16px; 
+  margin-bottom: 24px; 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center;
+  box-shadow: var(--shadow-lg);
+}
+header h1 { 
+  font-size: 1.5rem; 
+  font-weight: 600; 
+  display: flex; 
+  align-items: center; 
+  gap: 10px;
+  color: var(--warm-white);
+  letter-spacing: 0.5px;
+}
+.user-info { display: flex; align-items: center; gap: 12px; font-size: 0.9rem; color: var(--text-muted); }
+.user-info span { background: rgba(255,255,255,0.05); border: 1px solid var(--border); padding: 8px 16px; border-radius: 24px; }
+
+/* Tabs */
+.tabs { display: flex; gap: 8px; margin-bottom: 24px; background: var(--bg-card); border: 1px solid var(--border); padding: 8px; border-radius: 12px; box-shadow: var(--shadow); }
+.tab { padding: 12px 24px; background: transparent; border: 1px solid transparent; border-radius: 8px; cursor: pointer; font-size: 0.95rem; color: var(--text-muted); font-weight: 500; transition: all 0.3s; }
+.tab:hover { background: var(--bg-card-hover); border-color: var(--border); color: var(--text); }
+.tab.active { background: var(--gold); border-color: var(--gold); color: var(--bg-dark); font-weight: 600; }
+.badge { background: var(--danger); color: #fff; font-size: 0.75rem; padding: 2px 8px; border-radius: 10px; margin-left: 6px; }
+
+/* Period Filter */
+.period-filter { 
+  display: flex; 
+  gap: 8px; 
+  margin-bottom: 20px; 
+  padding: 16px 20px; 
+  background: var(--bg-card); 
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  box-shadow: var(--shadow);
+  align-items: center;
+}
+.period-filter label { font-weight: 600; color: var(--text-muted); margin-right: 12px; }
+.period-btn { 
+  padding: 8px 16px; 
+  border: 1px solid var(--border); 
+  border-radius: 8px; 
+  background: transparent; 
+  color: var(--text-muted);
+  cursor: pointer; 
+  font-size: 0.85rem; 
+  font-weight: 500;
+  transition: all 0.3s;
+}
+.period-btn:hover { border-color: var(--gold); color: var(--gold); }
+.period-btn.active { background: var(--gold); border-color: var(--gold); color: var(--bg-dark); font-weight: 600; }
+.date-range { margin-left: auto; display: flex; align-items: center; gap: 8px; color: var(--text-muted); }
+.date-range input { padding: 8px 12px; border: 1px solid var(--border); border-radius: 8px; font-size: 0.85rem; background: var(--bg-dark); color: var(--text); }
+
+/* KPI Cards */
+.kpi-grid { 
+  display: grid; 
+  grid-template-columns: repeat(5, 1fr); 
+  gap: 16px; 
+  margin-bottom: 24px; 
+}
+.kpi-card { 
+  background: var(--bg-card); 
+  border: 1px solid var(--border);
+  border-radius: 16px; 
+  padding: 20px; 
+  box-shadow: var(--shadow);
+  position: relative;
+  overflow: hidden;
+  transition: all 0.3s;
+}
+.kpi-card:hover { 
+  transform: translateY(-4px); 
+  border-color: var(--gold);
+}
+.kpi-card::before {
+  content: '';
+  position: absolute;
+  top: 0;
+  left: 0;
+  right: 0;
+  height: 3px;
+  background: var(--gold);
+}
+.kpi-card.blue::before { background: var(--info); }
+.kpi-card.green::before { background: var(--success); }
+.kpi-card.orange::before { background: var(--warning); }
+.kpi-card.red::before { background: var(--danger); }
+.kpi-card.purple::before { background: #a78bfa; }
+.kpi-label { font-size: 0.8rem; color: var(--text-muted); margin-bottom: 8px; font-weight: 500; }
+.kpi-value { font-size: 1.8rem; font-weight: 700; color: var(--warm-white); }
+.kpi-value.green { color: var(--success); }
+.kpi-change { display: flex; align-items: center; gap: 4px; font-size: 0.8rem; margin-top: 8px; }
+.kpi-change.up { color: var(--success); }
+.kpi-change.down { color: var(--danger); }
+.kpi-target { font-size: 0.75rem; color: var(--text-muted); margin-top: 4px; }
+.kpi-progress { 
+  height: 6px; 
+  background: var(--border); 
+  border-radius: 3px; 
+  margin-top: 8px; 
+  overflow: hidden;
+}
+.kpi-progress-bar { height: 100%; border-radius: 3px; transition: width 0.5s ease; background: linear-gradient(90deg, var(--gold), var(--gold-light)); }
+
+/* Cards */
+.card { 
+  background: var(--bg-card); 
+  border: 1px solid var(--border);
+  border-radius: 16px; 
+  padding: 24px; 
+  margin-bottom: 20px; 
+  box-shadow: var(--shadow); 
+}
+.card-header { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  margin-bottom: 20px; 
+  padding-bottom: 16px; 
+  border-bottom: 1px solid var(--border); 
+}
+.card-title { 
+  font-size: 1rem; 
+  font-weight: 600; 
+  color: var(--text); 
+  display: flex; 
+  align-items: center; 
+  gap: 8px;
+}
+.card-title::before {
+  content: '';
+  width: 4px;
+  height: 18px;
+  background: var(--gold);
+  border-radius: 2px;
+}
+.card-actions { display: flex; gap: 8px; }
+.card-action-btn { 
+  padding: 6px 12px; 
+  border: 1px solid var(--border); 
+  border-radius: 6px; 
+  background: transparent;
+  color: var(--text-muted);
+  font-size: 0.8rem; 
+  cursor: pointer;
+  transition: all 0.3s;
+}
+.card-action-btn:hover { border-color: var(--gold); color: var(--gold); }
+
+/* Grid Layout */
+.grid-2 { display: grid; grid-template-columns: 1fr 1fr; gap: 20px; }
+.grid-3 { display: grid; grid-template-columns: 1fr 1fr 1fr; gap: 20px; }
+
+/* Charts */
+.chart-container { position: relative; }
+.bar-chart { display: flex; align-items: flex-end; height: 200px; gap: 12px; padding: 20px 10px 10px; }
+.bar-group { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px; }
+.bar-wrapper { width: 100%; display: flex; gap: 4px; justify-content: center; align-items: flex-end; height: 160px; }
+.bar { 
+  width: 24px; 
+  border-radius: 6px 6px 0 0; 
+  transition: all 0.3s ease;
+  cursor: pointer;
+  position: relative;
+}
+.bar:hover { filter: brightness(1.2); transform: scaleY(1.05); transform-origin: bottom; }
+.bar.purchase { background: linear-gradient(180deg, var(--gold) 0%, #a68942 100%); }
+.bar.sales { background: linear-gradient(180deg, var(--success) 0%, #28a745 100%); }
+.bar-label { font-size: 0.8rem; color: var(--text-muted); font-weight: 500; }
+.chart-legend { display: flex; justify-content: center; gap: 24px; margin-top: 16px; }
+.legend-item { display: flex; align-items: center; gap: 6px; font-size: 0.8rem; color: var(--text-muted); }
+.legend-dot { width: 12px; height: 12px; border-radius: 3px; }
+
+/* Donut Chart */
+.donut-chart-container { display: flex; align-items: center; gap: 24px; padding: 10px; }
+.donut-chart { position: relative; width: 160px; height: 160px; }
+.donut-chart svg { transform: rotate(-90deg); }
+.donut-center { 
+  position: absolute; 
+  top: 50%; 
+  left: 50%; 
+  transform: translate(-50%, -50%); 
+  text-align: center; 
+}
+.donut-center-value { font-size: 1.5rem; font-weight: 700; color: var(--warm-white); }
+.donut-center-label { font-size: 0.75rem; color: var(--text-muted); }
+.donut-legend { flex: 1; }
+.donut-legend-item { 
+  display: flex; 
+  justify-content: space-between; 
+  align-items: center; 
+  padding: 10px 12px; 
+  border-radius: 8px;
+  margin-bottom: 8px;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+.donut-legend-item:hover { background: var(--bg-card-hover); }
+.donut-legend-left { display: flex; align-items: center; gap: 10px; }
+.donut-legend-dot { width: 12px; height: 12px; border-radius: 4px; }
+.donut-legend-label { font-size: 0.85rem; color: var(--text); }
+.donut-legend-value { font-weight: 600; color: var(--text); }
+
+/* Horizontal Bar Chart */
+.h-bar-chart { padding: 10px 0; }
+.h-bar-item { margin-bottom: 16px; }
+.h-bar-header { display: flex; justify-content: space-between; margin-bottom: 6px; }
+.h-bar-label { font-size: 0.85rem; color: var(--text); }
+.h-bar-value { font-size: 0.85rem; font-weight: 600; color: var(--text); }
+.h-bar-track { height: 24px; background: var(--border); border-radius: 12px; overflow: hidden; position: relative; }
+.h-bar-fill { 
+  height: 100%; 
+  border-radius: 12px; 
+  transition: width 0.5s ease;
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  padding-right: 10px;
+  font-size: 0.75rem;
+  color: #fff;
+  font-weight: 600;
+}
+
+/* Filter Buttons */
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 20px;
+  background: transparent;
+  cursor: pointer;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.filter-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-dark);
+  font-weight: 600;
+}
+.filter-btn.selected {
+  background: rgba(201, 169, 98, 0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.filter-count {
+  font-size: 0.75rem;
+  opacity: 0.8;
+  margin-left: 2px;
+}
+
+/* Schedule Dropdown */
+.schedule-row {
+  display: none;
+}
+.schedule-row.visible {
+  display: table-row;
+}
+.schedule-cell {
+  padding: 0 !important;
+  background: var(--bg-dark);
+  border-top: none !important;
+}
+.schedule-content {
+  padding: 20px 24px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: 20px 0;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 50%;
+  left: 0;
+  right: 0;
+  height: 4px;
+  background: var(--border);
+  transform: translateY(-50%);
+  z-index: 0;
+}
+.timeline-progress {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  height: 4px;
+  background: linear-gradient(90deg, var(--success), var(--gold));
+  transform: translateY(-50%);
+  z-index: 1;
+  transition: width 0.5s ease;
+}
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 2;
+  flex: 1;
+}
+.timeline-dot {
+  width: 28px;
+  height: 28px;
+  border-radius: 50%;
+  background: var(--border);
+  border: 3px solid var(--bg-card);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 0.7rem;
+  color: #fff;
+  box-shadow: 0 2px 4px rgba(0,0,0,0.3);
+  transition: all 0.3s;
+}
+.timeline-item.completed .timeline-dot {
+  background: var(--success);
+}
+.timeline-item.current .timeline-dot {
+  background: var(--gold);
+  transform: scale(1.2);
+}
+.timeline-item.pending .timeline-dot {
+  background: var(--border);
+}
+.timeline-label {
+  margin-top: 10px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+.timeline-item.completed .timeline-label {
+  color: var(--success);
+}
+.timeline-item.current .timeline-label {
+  color: var(--accent);
+  font-weight: 700;
+}
+.timeline-date {
+  font-size: 0.65rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.timeline-item.completed .timeline-date,
+.timeline-item.current .timeline-date {
+  color: var(--text);
+}
+
+/* Schedule Info */
+.schedule-info {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 16px;
+  margin-top: 20px;
+  padding-top: 20px;
+  border-top: 1px dashed var(--border);
+}
+.schedule-info-item {
+  text-align: center;
+  padding: 12px;
+  background: #fff;
+  border-radius: 8px;
+}
+.schedule-info-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  margin-bottom: 4px;
+}
+.schedule-info-value {
+  font-size: 0.95rem;
+  font-weight: 600;
+  color: var(--text);
+}
+
+/* Phase Divider */
+.phase-divider {
+  display: flex;
+  align-items: center;
+  margin: 16px 0 8px;
+}
+.phase-divider-line {
+  flex: 1;
+  height: 1px;
+  background: var(--border);
+}
+.phase-divider-text {
+  padding: 4px 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  background: var(--bg-card);
+  border-radius: 10px;
+  border: 1px solid var(--border);
+}
+
+/* Property Row Clickable */
+.property-row {
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.property-row:hover {
+  background: var(--bg-card-hover) !important;
+}
+.property-row.expanded {
+  background: rgba(201, 169, 98, 0.08) !important;
+  border-left: 2px solid var(--gold);
+}
+.expand-cell {
+  width: 30px;
+  text-align: center;
+}
+.expand-icon {
+  display: inline-block;
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  transition: transform 0.2s;
+}
+.property-row.expanded .expand-icon {
+  transform: rotate(90deg);
+  color: var(--gold);
+}
+
+/* Schedule Detail Row */
+.schedule-row {
+  display: none;
+}
+.schedule-row.visible {
+  display: table-row;
+}
+.schedule-row td {
+  padding: 0 !important;
+  background: var(--bg-dark);
+}
+.schedule-container {
+  padding: 24px 32px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Schedule Timeline */
+.schedule-timeline {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: 0 10px;
+}
+.schedule-timeline::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 30px;
+  right: 30px;
+  height: 4px;
+  background: var(--border);
+  z-index: 0;
+}
+.schedule-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  min-width: 80px;
+}
+.schedule-step-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  border: 3px solid var(--border);
+  background: #fff;
+  transition: all 0.3s;
+}
+.schedule-step.completed .schedule-step-icon {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.schedule-step.current .schedule-step-icon {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2);
+  animation: pulse 2s infinite;
+}
+.schedule-step.pending .schedule-step-icon {
+  background: #fff;
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+@keyframes pulse {
+  0%, 100% { box-shadow: 0 0 0 4px rgba(14, 165, 233, 0.2); }
+  50% { box-shadow: 0 0 0 8px rgba(14, 165, 233, 0.1); }
+}
+.schedule-step-label {
+  font-size: 0.75rem;
+  font-weight: 600;
+  color: var(--text-muted);
+  text-align: center;
+  white-space: nowrap;
+}
+.schedule-step.completed .schedule-step-label {
+  color: var(--success);
+}
+.schedule-step.current .schedule-step-label {
+  color: var(--accent);
+}
+.schedule-step-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.schedule-step.completed .schedule-step-date,
+.schedule-step.current .schedule-step-date {
+  color: var(--text);
+}
+
+/* Schedule Section Dividers */
+.schedule-sections {
+  display: flex;
+  margin-bottom: 12px;
+  gap: 8px;
+}
+.schedule-section-label {
+  padding: 4px 12px;
+  border-radius: 12px;
+  font-size: 0.7rem;
+  font-weight: 600;
+}
+.schedule-section-label.buy {
+  background: #dbeafe;
+  color: #1e40af;
+}
+.schedule-section-label.reno {
+  background: #fef3c7;
+  color: #92400e;
+}
+.schedule-section-label.sell {
+  background: #d1fae5;
+  color: #065f46;
+}
+
+/* Property Row Clickable */
+#propertyBody tr {
+  cursor: pointer;
+  transition: background 0.2s;
+}
+#propertyBody tr:hover {
+  background: var(--bg-card-hover) !important;
+}
+#propertyBody tr.expanded {
+  background: rgba(201, 169, 98, 0.08) !important;
+}
+
+/* Timeline Dropdown */
+.timeline-row {
+  display: none;
+}
+.timeline-row.show {
+  display: table-row;
+}
+.timeline-row td {
+  padding: 0 !important;
+  background: var(--bg-dark);
+  border-top: none !important;
+}
+.timeline-container {
+  padding: 24px 32px;
+  animation: slideDown 0.3s ease;
+}
+@keyframes slideDown {
+  from { opacity: 0; transform: translateY(-10px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+
+/* Timeline */
+.timeline {
+  display: flex;
+  justify-content: space-between;
+  position: relative;
+  padding: 0 10px;
+}
+.timeline::before {
+  content: '';
+  position: absolute;
+  top: 20px;
+  left: 40px;
+  right: 40px;
+  height: 4px;
+  background: var(--border);
+  z-index: 0;
+}
+.timeline-item {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  position: relative;
+  z-index: 1;
+  flex: 1;
+  max-width: 100px;
+}
+.timeline-icon {
+  width: 40px;
+  height: 40px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 1rem;
+  margin-bottom: 8px;
+  border: 3px solid var(--border);
+  background: var(--bg-card);
+  transition: all 0.3s;
+}
+.timeline-item.completed .timeline-icon {
+  background: var(--success);
+  border-color: var(--success);
+  color: #fff;
+}
+.timeline-item.current .timeline-icon {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-dark);
+  animation: pulse 2s infinite;
+}
+@keyframes pulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.05); }
+}
+.timeline-item.pending .timeline-icon {
+  background: var(--bg-card);
+  border-color: var(--border);
+  color: var(--text-muted);
+}
+.timeline-label {
+  font-size: 0.75rem;
+  color: var(--text-muted);
+  text-align: center;
+  font-weight: 500;
+}
+.timeline-item.completed .timeline-label,
+.timeline-item.current .timeline-label {
+  color: var(--text);
+  font-weight: 600;
+}
+.timeline-date {
+  font-size: 0.7rem;
+  color: var(--text-muted);
+  margin-top: 4px;
+}
+.timeline-section-label {
+  position: absolute;
+  top: -28px;
+  font-size: 0.7rem;
+  font-weight: 600;
+  padding: 2px 8px;
+  border-radius: 4px;
+  white-space: nowrap;
+}
+.section-purchase {
+  background: rgba(100, 210, 255, 0.15);
+  color: var(--info);
+  border: 1px solid var(--info);
+}
+.section-renovation {
+  background: rgba(255, 170, 0, 0.15);
+  color: var(--warning);
+  border: 1px solid var(--warning);
+}
+.section-sale {
+  background: rgba(52, 199, 89, 0.15);
+  color: var(--success);
+  border: 1px solid var(--success);
+}
+
+/* Heatmap */
+.heatmap { display: grid; gap: 4px; }
+.heatmap-row { display: flex; gap: 4px; align-items: center; }
+.heatmap-label { width: 80px; font-size: 0.8rem; color: var(--text-muted); text-align: right; padding-right: 12px; }
+.heatmap-cell { 
+  flex: 1; 
+  height: 40px; 
+  border-radius: 6px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 0.8rem;
+  font-weight: 600;
+  color: #fff;
+  cursor: pointer;
+  transition: transform 0.2s, box-shadow 0.2s;
+}
+.heatmap-cell:hover { transform: scale(1.05); box-shadow: 0 0 15px rgba(255,255,255,0.2); z-index: 1; }
+.heatmap-header { display: flex; gap: 4px; margin-bottom: 8px; padding-left: 92px; }
+.heatmap-header span { flex: 1; text-align: center; font-size: 0.75rem; color: var(--text-muted); font-weight: 500; }
+
+/* Risk Alerts */
+.alert-list { }
+.alert-item { 
+  display: flex; 
+  align-items: center; 
+  gap: 16px; 
+  padding: 16px; 
+  border-radius: 12px; 
+  margin-bottom: 12px;
+  border-left: 4px solid;
+  transition: transform 0.2s;
+  cursor: pointer;
+  background: var(--bg-card);
+}
+.alert-item:hover { transform: translateX(4px); }
+.alert-item.critical { background: rgba(255, 69, 58, 0.1); border-color: var(--danger); }
+.alert-item.warning { background: rgba(255, 170, 0, 0.1); border-color: var(--warning); }
+.alert-item.info { background: rgba(0, 212, 255, 0.1); border-color: var(--info); }
+.alert-icon { 
+  width: 40px; 
+  height: 40px; 
+  border-radius: 10px; 
+  display: flex; 
+  align-items: center; 
+  justify-content: center;
+  font-size: 1.2rem;
+}
+.alert-item.critical .alert-icon { background: rgba(255, 69, 58, 0.2); }
+.alert-item.warning .alert-icon { background: rgba(255, 170, 0, 0.2); }
+.alert-item.info .alert-icon { background: rgba(0, 212, 255, 0.2); }
+.alert-content { flex: 1; }
+.alert-title { font-weight: 600; font-size: 0.9rem; margin-bottom: 2px; }
+.alert-item.critical .alert-title { color: var(--danger); }
+.alert-item.warning .alert-title { color: var(--warning); }
+.alert-item.info .alert-title { color: var(--info); }
+.alert-desc { font-size: 0.8rem; color: var(--text-muted); }
+.alert-action { 
+  padding: 8px 16px; 
+  border-radius: 8px; 
+  font-size: 0.8rem; 
+  font-weight: 500;
+  border: none;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+.alert-item.critical .alert-action { background: var(--danger); color: #fff; }
+.alert-item.warning .alert-action { background: var(--warning); color: var(--bg-dark); }
+.alert-item.info .alert-action { background: var(--info); color: var(--bg-dark); }
+
+/* Data Table */
+table { width: 100%; border-collapse: collapse; }
+th, td { padding: 14px 16px; text-align: left; border-bottom: 1px solid var(--border); }
+th { background: var(--bg-dark); font-weight: 600; font-size: 0.8rem; color: var(--text-muted); text-transform: uppercase; letter-spacing: 0.5px; }
+td { font-size: 0.85rem; }
+tr:hover { background: var(--bg-card-hover); }
+.price-cell { font-weight: 600; color: var(--gold); }
+.profit-cell { font-weight: 600; color: var(--success); }
+.status-tag { 
+  display: inline-block; 
+  padding: 4px 12px; 
+  border-radius: 20px; 
+  font-size: 0.75rem; 
+  font-weight: 600;
+  border: 1px solid;
+}
+.status-reno { background: rgba(255, 170, 0, 0.15); color: var(--warning); border-color: var(--warning); }
+.status-sale { background: rgba(52, 199, 89, 0.15); color: var(--success); border-color: var(--success); }
+.status-nego { background: rgba(201, 169, 98, 0.15); color: var(--gold); border-color: var(--gold); }
+.status-long { background: rgba(255, 69, 58, 0.15); color: var(--danger); border-color: var(--danger); }
+.status-wait { background: rgba(100, 210, 255, 0.15); color: var(--info); border-color: var(--info); }
+.status-done { background: rgba(152, 152, 157, 0.15); color: var(--text-muted); border-color: var(--text-muted); }
+
+/* Filter Buttons (table section) */
+.filter-btn {
+  padding: 8px 16px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+  font-size: 0.85rem;
+  font-weight: 500;
+  color: var(--text-muted);
+  cursor: pointer;
+  transition: all 0.3s;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.filter-btn:hover {
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.filter-btn.active {
+  background: var(--gold);
+  border-color: var(--gold);
+  color: var(--bg-dark);
+  font-weight: 600;
+}
+.filter-btn.selected {
+  background: rgba(201, 169, 98, 0.2);
+  border-color: var(--gold);
+  color: var(--gold);
+}
+.filter-count {
+  background: rgba(255,255,255,0.1);
+  padding: 2px 6px;
+  border-radius: 10px;
+  font-size: 0.75rem;
+}
+.filter-btn.active .filter-count,
+.filter-btn.selected .filter-count {
+  background: rgba(0,0,0,0.2);
+}
+
+/* Line Chart */
+.line-chart-container { position: relative; height: 200px; padding: 20px 0; }
+.line-chart { width: 100%; height: 100%; }
+.line-chart-grid { stroke: var(--border); stroke-width: 1; }
+.line-chart-line { fill: none; stroke-width: 3; stroke-linecap: round; stroke-linejoin: round; }
+.line-chart-area { opacity: 0.1; }
+.line-chart-dot { cursor: pointer; transition: r 0.2s; }
+.line-chart-dot:hover { r: 8; }
+.line-chart-labels { display: flex; justify-content: space-between; padding: 10px 20px 0; }
+.line-chart-labels span { font-size: 0.75rem; color: var(--text-muted); }
+
+/* Gauge Chart */
+.gauge-container { display: flex; justify-content: center; padding: 20px; }
+.gauge { position: relative; width: 180px; height: 100px; }
+.gauge-bg { fill: none; stroke: var(--bg); stroke-width: 20; }
+.gauge-fill { fill: none; stroke-width: 20; stroke-linecap: round; transition: stroke-dashoffset 1s ease; }
+.gauge-center { 
+  position: absolute; 
+  bottom: 0; 
+  left: 50%; 
+  transform: translateX(-50%); 
+  text-align: center; 
+}
+.gauge-value { font-size: 2rem; font-weight: 700; }
+.gauge-label { font-size: 0.8rem; color: var(--text-muted); }
+
+/* Mini Sparkline */
+.sparkline { display: flex; align-items: flex-end; gap: 2px; height: 30px; }
+.sparkline-bar { 
+  flex: 1; 
+  background: var(--accent); 
+  border-radius: 2px; 
+  opacity: 0.6;
+  transition: opacity 0.2s;
+}
+.sparkline-bar:last-child { opacity: 1; }
+
+/* Tooltip */
+.tooltip {
+  position: absolute;
+  background: var(--bg-card);
+  color: var(--text);
+  padding: 8px 12px;
+  border-radius: 8px;
+  font-size: 0.8rem;
+  pointer-events: none;
+  opacity: 0;
+  transition: opacity 0.2s;
+  z-index: 1000;
+  white-space: nowrap;
+  border: 1px solid var(--border);
+  box-shadow: 0 0 20px rgba(0,0,0,0.5);
+}
+.tooltip.visible { opacity: 1; }
+
+/* Animations */
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(20px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-in { animation: fadeInUp 0.5s ease forwards; }
+.delay-1 { animation-delay: 0.1s; }
+.delay-2 { animation-delay: 0.2s; }
+.delay-3 { animation-delay: 0.3s; }
+.delay-4 { animation-delay: 0.4s; }
+
+/* Responsive */
+
+/* iPad Pro 12.9" and larger tablets (landscape) */
+@media (max-width: 1366px) {
+  .container { padding: 16px; }
+  .kpi-grid { grid-template-columns: repeat(5, 1fr); gap: 12px; }
+}
+
+/* iPad Pro 11" / iPad Air (landscape) */
+@media (max-width: 1200px) { 
+  .kpi-grid { grid-template-columns: repeat(3, 1fr); }
+  .grid-2, .grid-3 { grid-template-columns: 1fr; }
+}
+
+/* iPad (portrait) and iPad mini */
+@media (max-width: 1024px) {
+  .container { padding: 12px; }
+  
+  header { 
+    flex-direction: column; 
+    gap: 12px; 
+    text-align: center;
+    padding: 16px 20px;
+  }
+  header h1 { font-size: 1.3rem; }
+  .user-info { justify-content: center; }
+  
+  .tabs { 
+    flex-wrap: wrap; 
+    gap: 6px;
+  }
+  .tab { 
+    padding: 10px 16px; 
+    font-size: 0.85rem;
+    flex: 1 1 auto;
+    min-width: 100px;
+    text-align: center;
+  }
+  
+  .period-filter {
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  .period-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+  }
+  .date-range {
+    margin-left: 0;
+    margin-top: 8px;
+    width: 100%;
+    justify-content: center;
+  }
+  
+  .kpi-grid { 
+    grid-template-columns: repeat(3, 1fr); 
+    gap: 10px;
+  }
+  .kpi-card { padding: 16px; }
+  .kpi-value { font-size: 1.6rem; }
+  
+  .card { padding: 16px; }
+  .card-header { 
+    flex-direction: column; 
+    gap: 12px; 
+    align-items: flex-start;
+  }
+  .card-actions {
+    width: 100%;
+    flex-wrap: wrap;
+    gap: 8px;
+  }
+  
+  /* Filter buttons for iPad */
+  .filter-btn {
+    padding: 10px 14px;
+    font-size: 0.85rem;
+    min-height: 44px; /* iOS touch target */
+  }
+  
+  /* Property table adjustments */
+  #propertyTable {
+    font-size: 0.8rem;
+  }
+  #propertyTable th,
+  #propertyTable td {
+    padding: 10px 8px;
+  }
+  
+  /* Summary grid */
+  #propertySummary {
+    grid-template-columns: repeat(3, 1fr) !important;
+    gap: 8px;
+  }
+  #propertySummary > div:nth-child(4),
+  #propertySummary > div:nth-child(5) {
+    grid-column: span 1;
+  }
+  
+  /* Timeline adjustments */
+  .timeline-container {
+    padding: 16px 20px;
+  }
+  .timeline-icon {
+    width: 36px;
+    height: 36px;
+    font-size: 0.9rem;
+  }
+  .timeline-label {
+    font-size: 0.7rem;
+  }
+  .timeline-date {
+    font-size: 0.65rem;
+  }
+}
+
+/* iPad mini and smaller tablets (portrait) */
+@media (max-width: 768px) { 
+  .kpi-grid { grid-template-columns: repeat(2, 1fr); }
+  .period-filter { flex-wrap: wrap; }
+  .date-range { margin-left: 0; margin-top: 12px; width: 100%; }
+  
+  header h1 { font-size: 1.2rem; }
+  
+  .tabs {
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    flex-wrap: nowrap;
+    padding-bottom: 4px;
+  }
+  .tab {
+    flex-shrink: 0;
+    min-width: 90px;
+  }
+  
+  /* Table horizontal scroll */
+  #propertyTable {
+    font-size: 0.75rem;
+  }
+  #propertyTable th,
+  #propertyTable td {
+    padding: 8px 6px;
+    white-space: nowrap;
+  }
+  
+  /* Summary 2 columns */
+  #propertySummary {
+    grid-template-columns: repeat(2, 1fr) !important;
+  }
+  
+  /* Timeline compact */
+  .timeline {
+    flex-wrap: wrap;
+    gap: 8px;
+    justify-content: flex-start;
+  }
+  .timeline::before {
+    display: none;
+  }
+  .timeline-item {
+    flex: 0 0 calc(20% - 8px);
+    max-width: calc(20% - 8px);
+    margin-bottom: 12px;
+  }
+  .timeline-icon {
+    width: 32px;
+    height: 32px;
+    font-size: 0.8rem;
+  }
+  
+  /* Charts smaller */
+  .donut-chart svg {
+    width: 140px;
+    height: 140px;
+  }
+}
+
+/* Touch-friendly improvements for all tablets */
+@media (pointer: coarse) {
+  .filter-btn,
+  .period-btn,
+  .tab,
+  .card-action-btn {
+    min-height: 44px;
+    min-width: 44px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
+  
+  .property-row {
+    min-height: 52px;
+    cursor: pointer;
+    -webkit-tap-highlight-color: rgba(0,0,0,0.1);
+  }
+  
+  /* Larger touch targets */
+  .expand-cell {
+    width: 44px;
+    padding: 12px 8px !important;
+  }
+  .expand-icon {
+    font-size: 0.9rem;
+  }
+  
+  /* Prevent text selection on touch */
+  .filter-btn,
+  .property-row,
+  .tab,
+  .period-btn {
+    -webkit-user-select: none;
+    user-select: none;
+    touch-action: manipulation;
+  }
+  
+  /* Active states for touch feedback */
+  .filter-btn:active,
+  .period-btn:active,
+  .tab:active {
+    transform: scale(0.98);
+    opacity: 0.9;
+  }
+  .property-row:active {
+    background: var(--bg-card-hover) !important;
+  }
+}
+
+/* Landscape orientation for iPad */
+@media (max-width: 1024px) and (orientation: landscape) {
+  .kpi-grid { 
+    grid-template-columns: repeat(5, 1fr); 
+  }
+  .grid-2 { 
+    grid-template-columns: repeat(2, 1fr); 
+  }
+  .grid-3 { 
+    grid-template-columns: repeat(3, 1fr); 
+  }
+  #propertySummary {
+    grid-template-columns: repeat(5, 1fr) !important;
+  }
+}
+
+/* Print styles for documentation */
+@media print {
+  .tabs, .period-filter, .card-action-btn, .filter-btn {
+    display: none !important;
+  }
+  .card {
+    break-inside: avoid;
+    page-break-inside: avoid;
+  }
+}
+</style>
+</head>
+<body>
+
+<div class="container">
+  <header>
+    <h1>📊 マンション買取 BI Dashboard</h1>
+    <div class="user-info">
+      <span>👤 山田 太郎（部長）</span>
+      <span>📅 2024/12/19</span>
+    </div>
+  </header>
+
+  <div class="tabs">
+    <button class="tab" onclick="showTab('approval')">承認待ち<span class="badge">3</span></button>
+    <button class="tab" onclick="showTab('approved')">承認済み</button>
+    <button class="tab" onclick="showTab('rejected')">却下</button>
+    <button class="tab active" onclick="showTab('bi')">📊 BI・保有物件</button>
+  </div>
+
+  <!-- Period Filter -->
+  <div class="period-filter">
+    <label>📅 表示期間:</label>
+    <button class="period-btn" onclick="setPeriod(this, 'month')">今月</button>
+    <button class="period-btn active" onclick="setPeriod(this, 'quarter')">四半期</button>
+    <button class="period-btn" onclick="setPeriod(this, 'half')">半期</button>
+    <button class="period-btn" onclick="setPeriod(this, 'year')">年間</button>
+    <div class="date-range">
+      <input type="date" value="2024-10-01">
+      <span>〜</span>
+      <input type="date" value="2024-12-19">
+    </div>
+  </div>
+
+  <!-- KPI Cards -->
+  <div class="kpi-grid">
+    <div class="kpi-card blue animate-in">
+      <div class="kpi-label">保有物件数</div>
+      <div class="kpi-value">30件</div>
+      <div class="kpi-change up">
+        <span>▲</span> 前月比 +5件
+      </div>
+      <div class="sparkline" style="margin-top:12px;">
+        <div class="sparkline-bar" style="height:40%"></div>
+        <div class="sparkline-bar" style="height:55%"></div>
+        <div class="sparkline-bar" style="height:65%"></div>
+        <div class="sparkline-bar" style="height:70%"></div>
+        <div class="sparkline-bar" style="height:80%"></div>
+        <div class="sparkline-bar" style="height:100%"></div>
+      </div>
+    </div>
+    
+    <div class="kpi-card green animate-in delay-1">
+      <div class="kpi-label">総在庫額</div>
+      <div class="kpi-value">113.7億</div>
+      <div class="kpi-change up">
+        <span>▲</span> 前月比 +18.2億
+      </div>
+      <div class="kpi-target">港区: 20件 / 67%</div>
+      <div class="kpi-progress">
+        <div class="kpi-progress-bar" style="width:67%;background:var(--success);"></div>
+      </div>
+    </div>
+    
+    <div class="kpi-card orange animate-in delay-2">
+      <div class="kpi-label">平均価格</div>
+      <div class="kpi-value">3.79億</div>
+      <div class="kpi-change up">
+        <span>▲</span> 前月比 +0.3億
+      </div>
+      <div class="kpi-target">価格帯: 1.6億〜9億</div>
+      <div class="kpi-progress">
+        <div class="kpi-progress-bar" style="width:85%;background:var(--warning);"></div>
+      </div>
+    </div>
+    
+    <div class="kpi-card purple animate-in delay-3">
+      <div class="kpi-label">平均坪単価</div>
+      <div class="kpi-value">1,384万</div>
+      <div class="kpi-change up">
+        <span>▲</span> 前月比 +52万
+      </div>
+      <div class="kpi-target">最高: 2,994万円（表参道）</div>
+      <div class="kpi-progress">
+        <div class="kpi-progress-bar" style="width:78%;background:#8b5cf6;"></div>
+      </div>
+    </div>
+    
+    <div class="kpi-card red animate-in delay-4">
+      <div class="kpi-label">平均専有面積</div>
+      <div class="kpi-value">85.2㎡</div>
+      <div class="kpi-change down">
+        <span>▼</span> 前月比 -2.1㎡
+      </div>
+      <div class="kpi-target">間取り: 2LDK中心</div>
+      <div class="kpi-progress">
+        <div class="kpi-progress-bar" style="width:70%;background:var(--danger);"></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 1: Charts -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📈 月別仕入・販売実績</div>
+        <div class="card-actions">
+          <button class="card-action-btn">金額</button>
+          <button class="card-action-btn">件数</button>
+        </div>
+      </div>
+      <div class="bar-chart">
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:60%;" data-value="4.2億"></div>
+            <div class="bar sales" style="height:45%;" data-value="3.1億"></div>
+          </div>
+          <div class="bar-label">7月</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:80%;" data-value="5.6億"></div>
+            <div class="bar sales" style="height:55%;" data-value="3.9億"></div>
+          </div>
+          <div class="bar-label">8月</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:70%;" data-value="4.9億"></div>
+            <div class="bar sales" style="height:85%;" data-value="6.0億"></div>
+          </div>
+          <div class="bar-label">9月</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:90%;" data-value="6.3億"></div>
+            <div class="bar sales" style="height:65%;" data-value="4.6億"></div>
+          </div>
+          <div class="bar-label">10月</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:75%;" data-value="5.3億"></div>
+            <div class="bar sales" style="height:90%;" data-value="6.3億"></div>
+          </div>
+          <div class="bar-label">11月</div>
+        </div>
+        <div class="bar-group">
+          <div class="bar-wrapper">
+            <div class="bar purchase" style="height:50%;" data-value="3.5億"></div>
+            <div class="bar sales" style="height:40%;" data-value="2.8億"></div>
+          </div>
+          <div class="bar-label">12月</div>
+        </div>
+      </div>
+      <div class="chart-legend">
+        <div class="legend-item"><div class="legend-dot" style="background:var(--accent);"></div>仕入</div>
+        <div class="legend-item"><div class="legend-dot" style="background:var(--success);"></div>販売</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 粗利率推移</div>
+      </div>
+      <div class="line-chart-container">
+        <svg class="line-chart" viewBox="0 0 400 150" preserveAspectRatio="none">
+          <!-- Grid -->
+          <line x1="0" y1="30" x2="400" y2="30" class="line-chart-grid" stroke-dasharray="4"/>
+          <line x1="0" y1="60" x2="400" y2="60" class="line-chart-grid" stroke-dasharray="4"/>
+          <line x1="0" y1="90" x2="400" y2="90" class="line-chart-grid" stroke-dasharray="4"/>
+          <line x1="0" y1="120" x2="400" y2="120" class="line-chart-grid" stroke-dasharray="4"/>
+          <!-- Area -->
+          <path d="M0,90 L66,75 L133,85 L200,70 L266,55 L333,45 L400,40 L400,150 L0,150 Z" class="line-chart-area" fill="var(--success)"/>
+          <!-- Line -->
+          <path d="M0,90 L66,75 L133,85 L200,70 L266,55 L333,45 L400,40" class="line-chart-line" stroke="var(--success)"/>
+          <!-- Dots -->
+          <circle cx="0" cy="90" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="66" cy="75" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="133" cy="85" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="200" cy="70" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="266" cy="55" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="333" cy="45" r="5" fill="var(--success)" class="line-chart-dot"/>
+          <circle cx="400" cy="40" r="6" fill="var(--success)" class="line-chart-dot" stroke="#fff" stroke-width="2"/>
+        </svg>
+        <div style="position:absolute;right:10px;top:35px;font-size:0.75rem;color:var(--text-muted);">30%</div>
+        <div style="position:absolute;right:10px;top:55px;font-size:0.75rem;color:var(--text-muted);">25%</div>
+        <div style="position:absolute;right:10px;top:85px;font-size:0.75rem;color:var(--text-muted);">20%</div>
+        <div style="position:absolute;right:10px;top:115px;font-size:0.75rem;color:var(--text-muted);">15%</div>
+      </div>
+      <div class="line-chart-labels">
+        <span>7月</span><span>8月</span><span>9月</span><span>10月</span><span>11月</span><span>12月</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 2: Distribution Charts -->
+  <div class="grid-3">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏢 エリア別保有物件</div>
+      </div>
+      <div class="donut-chart-container">
+        <div class="donut-chart">
+          <svg width="160" height="160" viewBox="0 0 160 160">
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#48484a" stroke-width="20"/>
+            <!-- 港区: 20件 = 67% = 251 * 0.67 = 168 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#c9a962" stroke-width="20" 
+                    stroke-dasharray="168 252" stroke-dashoffset="0"/>
+            <!-- 中央区: 4件 = 13% = 33 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#34c759" stroke-width="20" 
+                    stroke-dasharray="33 252" stroke-dashoffset="-168"/>
+            <!-- 渋谷区: 3件 = 10% = 25 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#64d2ff" stroke-width="20" 
+                    stroke-dasharray="25 252" stroke-dashoffset="-201"/>
+            <!-- 千代田区: 2件 = 7% = 17 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#a78bfa" stroke-width="20" 
+                    stroke-dasharray="17 252" stroke-dashoffset="-226"/>
+            <!-- 文京区: 1件 = 3% = 8 -->
+            <circle cx="80" cy="80" r="60" fill="none" stroke="#ff9f0a" stroke-width="20" 
+                    stroke-dasharray="8 252" stroke-dashoffset="-243"/>
+          </svg>
+          <div class="donut-center">
+            <div class="donut-center-value">30</div>
+            <div class="donut-center-label">物件</div>
+          </div>
+        </div>
+        <div class="donut-legend">
+          <div class="donut-legend-item">
+            <div class="donut-legend-left">
+              <div class="donut-legend-dot" style="background:var(--gold);"></div>
+              <span class="donut-legend-label">港区</span>
+            </div>
+            <span class="donut-legend-value">20件（67%）</span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-legend-left">
+              <div class="donut-legend-dot" style="background:var(--success);"></div>
+              <span class="donut-legend-label">中央区</span>
+            </div>
+            <span class="donut-legend-value">4件（13%）</span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-legend-left">
+              <div class="donut-legend-dot" style="background:var(--info);"></div>
+              <span class="donut-legend-label">渋谷区</span>
+            </div>
+            <span class="donut-legend-value">3件（10%）</span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-legend-left">
+              <div class="donut-legend-dot" style="background:#a78bfa;"></div>
+              <span class="donut-legend-label">千代田区</span>
+            </div>
+            <span class="donut-legend-value">2件（7%）</span>
+          </div>
+          <div class="donut-legend-item">
+            <div class="donut-legend-left">
+              <div class="donut-legend-dot" style="background:var(--warning);"></div>
+              <span class="donut-legend-label">文京区</span>
+            </div>
+            <span class="donut-legend-value">1件（3%）</span>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">💰 価格帯別分布</div>
+      </div>
+      <div class="h-bar-chart">
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">〜2億円</span>
+            <span class="h-bar-value">4件</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width:29%;background:linear-gradient(90deg,#10b981,#059669);">13%</div>
+          </div>
+        </div>
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">2〜3億円</span>
+            <span class="h-bar-value">6件</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width:43%;background:linear-gradient(90deg,#3b82f6,#2563eb);">20%</div>
+          </div>
+        </div>
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">3〜5億円</span>
+            <span class="h-bar-value">14件</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width:100%;background:linear-gradient(90deg,#f59e0b,#d97706);">47%</div>
+          </div>
+        </div>
+        <div class="h-bar-item">
+          <div class="h-bar-header">
+            <span class="h-bar-label">5億円〜</span>
+            <span class="h-bar-value">6件</span>
+          </div>
+          <div class="h-bar-track">
+            <div class="h-bar-fill" style="width:43%;background:linear-gradient(90deg,#ef4444,#dc2626);">20%</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🎯 予算達成状況</div>
+      </div>
+      <div class="gauge-container">
+        <div class="gauge">
+          <svg width="180" height="100" viewBox="0 0 180 100">
+            <path d="M 10 90 A 80 80 0 0 1 170 90" class="gauge-bg"/>
+            <path d="M 10 90 A 80 80 0 0 1 170 90" class="gauge-fill" stroke="var(--success)" 
+                  stroke-dasharray="251" stroke-dashoffset="30"/>
+          </svg>
+          <div class="gauge-center">
+            <div class="gauge-value" style="color:var(--success);">87.8%</div>
+            <div class="gauge-label">予算達成率</div>
+          </div>
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:16px;">
+        <div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">実績粗利</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--success);">15.8億円</div>
+        </div>
+        <div style="text-align:center;padding:12px;background:var(--bg);border-radius:8px;">
+          <div style="font-size:0.75rem;color:var(--text-muted);">目標粗利</div>
+          <div style="font-size:1.1rem;font-weight:700;color:var(--text);">18.0億円</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 3: Heatmap & Alerts -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🗺️ エリア×価格帯 ヒートマップ</div>
+        <div class="card-actions">
+          <button class="card-action-btn">件数</button>
+          <button class="card-action-btn">粗利率</button>
+        </div>
+      </div>
+      <div class="heatmap">
+        <div class="heatmap-header">
+          <span>〜1億</span>
+          <span>1〜2億</span>
+          <span>2〜3億</span>
+          <span>3億〜</span>
+        </div>
+        <div class="heatmap-row">
+          <div class="heatmap-label">港区</div>
+          <div class="heatmap-cell" style="background:#93c5fd;" data-count="1" data-profit="18.5%">1</div>
+          <div class="heatmap-cell" style="background:#3b82f6;" data-count="3" data-profit="22.1%">3</div>
+          <div class="heatmap-cell" style="background:#1d4ed8;" data-count="3" data-profit="25.8%">3</div>
+          <div class="heatmap-cell" style="background:#1e3a8a;" data-count="1" data-profit="28.2%">1</div>
+        </div>
+        <div class="heatmap-row">
+          <div class="heatmap-label">中央区</div>
+          <div class="heatmap-cell" style="background:#86efac;" data-count="2" data-profit="19.2%">2</div>
+          <div class="heatmap-cell" style="background:#22c55e;" data-count="2" data-profit="21.5%">2</div>
+          <div class="heatmap-cell" style="background:#16a34a;" data-count="2" data-profit="24.3%">2</div>
+          <div class="heatmap-cell" style="background:#e2e8f0;" data-count="0" data-profit="-">-</div>
+        </div>
+        <div class="heatmap-row">
+          <div class="heatmap-label">渋谷区</div>
+          <div class="heatmap-cell" style="background:#e2e8f0;" data-count="0" data-profit="-">-</div>
+          <div class="heatmap-cell" style="background:#fcd34d;" data-count="2" data-profit="20.8%">2</div>
+          <div class="heatmap-cell" style="background:#f59e0b;" data-count="2" data-profit="23.1%">2</div>
+          <div class="heatmap-cell" style="background:#d97706;" data-count="1" data-profit="26.5%">1</div>
+        </div>
+        <div class="heatmap-row">
+          <div class="heatmap-label">新宿区</div>
+          <div class="heatmap-cell" style="background:#c4b5fd;" data-count="1" data-profit="17.8%">1</div>
+          <div class="heatmap-cell" style="background:#a78bfa;" data-count="2" data-profit="21.2%">2</div>
+          <div class="heatmap-cell" style="background:#8b5cf6;" data-count="2" data-profit="24.6%">2</div>
+          <div class="heatmap-cell" style="background:#e2e8f0;" data-count="0" data-profit="-">-</div>
+        </div>
+        <div class="heatmap-row">
+          <div class="heatmap-label">その他</div>
+          <div class="heatmap-cell" style="background:#cbd5e1;" data-count="1" data-profit="16.2%">1</div>
+          <div class="heatmap-cell" style="background:#94a3b8;" data-count="2" data-profit="19.8%">2</div>
+          <div class="heatmap-cell" style="background:#64748b;" data-count="1" data-profit="22.4%">1</div>
+          <div class="heatmap-cell" style="background:#e2e8f0;" data-count="0" data-profit="-">-</div>
+        </div>
+      </div>
+      <div style="display:flex;justify-content:center;gap:16px;margin-top:16px;font-size:0.75rem;color:var(--text-muted);">
+        <span>薄 = 少数/低粗利</span>
+        <span>→</span>
+        <span>濃 = 多数/高粗利</span>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">⚠️ リスクアラート</div>
+        <span style="font-size:0.8rem;color:var(--text-muted);">要対応: 5件</span>
+      </div>
+      <div class="alert-list">
+        <div class="alert-item critical">
+          <div class="alert-icon">🚨</div>
+          <div class="alert-content">
+            <div class="alert-title">長期滞留（285日）</div>
+            <div class="alert-desc">グランドメゾン恵比寿 908 - 粗利率低下リスク</div>
+          </div>
+          <button class="alert-action">対策検討</button>
+        </div>
+        <div class="alert-item critical">
+          <div class="alert-icon">📉</div>
+          <div class="alert-content">
+            <div class="alert-title">価格下落リスク</div>
+            <div class="alert-desc">ザ・タワー横浜北仲 4201 - 相場下落傾向</div>
+          </div>
+          <button class="alert-action">価格見直し</button>
+        </div>
+        <div class="alert-item warning">
+          <div class="alert-icon">⏰</div>
+          <div class="alert-content">
+            <div class="alert-title">保有期間6ヶ月超過</div>
+            <div class="alert-desc">シティタワー品川 1402 - 103日経過</div>
+          </div>
+          <button class="alert-action">状況確認</button>
+        </div>
+        <div class="alert-item warning">
+          <div class="alert-icon">💰</div>
+          <div class="alert-content">
+            <div class="alert-title">粗利率目標未達</div>
+            <div class="alert-desc">ブリリアタワー池袋 3201 - 現在16.7%</div>
+          </div>
+          <button class="alert-action">再査定</button>
+        </div>
+        <div class="alert-item info">
+          <div class="alert-icon">📋</div>
+          <div class="alert-content">
+            <div class="alert-title">承認期限接近</div>
+            <div class="alert-desc">芝浦アイランドグローヴタワー 505 - 本日中</div>
+          </div>
+          <button class="alert-action">承認へ</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 4: Performance Analysis -->
+  <div class="grid-2">
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">📊 保有期間別 粗利率分析</div>
+      </div>
+      <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:12px;">
+        <div style="background:linear-gradient(135deg,#d1fae5,#a7f3d0);padding:20px;border-radius:12px;text-align:center;">
+          <div style="font-size:2rem;font-weight:700;color:#065f46;">26.8%</div>
+          <div style="font-size:0.8rem;color:#065f46;margin-top:4px;">〜3ヶ月</div>
+          <div style="font-size:0.75rem;color:#047857;margin-top:8px;">12件 / 平均45日</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fef3c7,#fde68a);padding:20px;border-radius:12px;text-align:center;">
+          <div style="font-size:2rem;font-weight:700;color:#92400e;">22.1%</div>
+          <div style="font-size:0.8rem;color:#92400e;margin-top:4px;">3〜6ヶ月</div>
+          <div style="font-size:0.75rem;color:#b45309;margin-top:8px;">9件 / 平均124日</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#fee2e2,#fecaca);padding:20px;border-radius:12px;text-align:center;">
+          <div style="font-size:2rem;font-weight:700;color:#991b1b;">18.5%</div>
+          <div style="font-size:0.8rem;color:#991b1b;margin-top:4px;">6〜9ヶ月</div>
+          <div style="font-size:0.75rem;color:#b91c1c;margin-top:8px;">5件 / 平均215日</div>
+        </div>
+        <div style="background:linear-gradient(135deg,#7f1d1d,#991b1b);padding:20px;border-radius:12px;text-align:center;">
+          <div style="font-size:2rem;font-weight:700;color:#fff;">12.3%</div>
+          <div style="font-size:0.8rem;color:#fecaca;margin-top:4px;">9ヶ月〜</div>
+          <div style="font-size:0.75rem;color:#fca5a5;margin-top:8px;">2件 / 平均298日</div>
+        </div>
+      </div>
+      <div style="margin-top:20px;padding:16px;background:var(--bg);border-radius:8px;">
+        <div style="font-size:0.85rem;color:var(--text-muted);margin-bottom:8px;">💡 インサイト</div>
+        <div style="font-size:0.9rem;color:var(--text);">保有期間が3ヶ月を超えると粗利率が<strong style="color:var(--danger);">平均4.7%低下</strong>。早期売却戦略の強化を推奨。</div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-header">
+        <div class="card-title">🏃 エリア別 平均成約スピード</div>
+      </div>
+      <div style="padding:10px 0;">
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:80px;font-size:0.9rem;font-weight:600;">中央区</div>
+          <div style="flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;">
+            <div style="height:100%;width:60%;background:var(--success);border-radius:6px;"></div>
+          </div>
+          <div style="width:80px;text-align:right;">
+            <span style="font-weight:700;color:var(--success);">72日</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:80px;font-size:0.9rem;font-weight:600;">港区</div>
+          <div style="flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;">
+            <div style="height:100%;width:70%;background:var(--success);border-radius:6px;"></div>
+          </div>
+          <div style="width:80px;text-align:right;">
+            <span style="font-weight:700;color:var(--success);">84日</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:80px;font-size:0.9rem;font-weight:600;">新宿区</div>
+          <div style="flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;">
+            <div style="height:100%;width:78%;background:var(--warning);border-radius:6px;"></div>
+          </div>
+          <div style="width:80px;text-align:right;">
+            <span style="font-weight:700;color:var(--warning);">93日</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 0;border-bottom:1px solid var(--border);">
+          <div style="width:80px;font-size:0.9rem;font-weight:600;">渋谷区</div>
+          <div style="flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;">
+            <div style="height:100%;width:88%;background:var(--warning);border-radius:6px;"></div>
+          </div>
+          <div style="width:80px;text-align:right;">
+            <span style="font-weight:700;color:var(--warning);">105日</span>
+          </div>
+        </div>
+        <div style="display:flex;align-items:center;gap:16px;padding:12px 0;">
+          <div style="width:80px;font-size:0.9rem;font-weight:600;">その他</div>
+          <div style="flex:1;height:12px;background:var(--bg);border-radius:6px;overflow:hidden;">
+            <div style="height:100%;width:100%;background:var(--danger);border-radius:6px;"></div>
+          </div>
+          <div style="width:80px;text-align:right;">
+            <span style="font-weight:700;color:var(--danger);">128日</span>
+          </div>
+        </div>
+      </div>
+      <div style="margin-top:12px;padding:12px;background:#eff6ff;border-radius:8px;display:flex;align-items:center;gap:8px;">
+        <span style="font-size:1.2rem;">🎯</span>
+        <span style="font-size:0.85rem;color:var(--primary);">目標: 90日以内</span>
+      </div>
+    </div>
+  </div>
+
+  <!-- Row 5: Property List -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">🏠 自社保有物件一覧（REINSデータ 12/19時点）</div>
+      <div class="card-actions">
+        <button class="card-action-btn" style="background:var(--accent);color:#fff;border:none;" onclick="exportCSV()">
+          📥 エクスポート
+        </button>
+      </div>
+    </div>
+    
+    <!-- Filter Buttons -->
+    <div style="margin-bottom:20px;padding:20px;background:var(--bg-dark);border:1px solid var(--border);border-radius:12px;">
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px;">📍 エリア <span style="font-size:0.75rem;font-weight:normal;">（複数選択可）</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="filterAreaBtns">
+          <button class="filter-btn active" data-filter="area" data-value="" onclick="toggleFilterBtn(this)">すべて</button>
+          <button class="filter-btn" data-filter="area" data-value="港区" onclick="toggleFilterBtn(this)">港区 <span class="filter-count">(20)</span></button>
+          <button class="filter-btn" data-filter="area" data-value="中央区" onclick="toggleFilterBtn(this)">中央区 <span class="filter-count">(4)</span></button>
+          <button class="filter-btn" data-filter="area" data-value="渋谷区" onclick="toggleFilterBtn(this)">渋谷区 <span class="filter-count">(3)</span></button>
+          <button class="filter-btn" data-filter="area" data-value="千代田区" onclick="toggleFilterBtn(this)">千代田区 <span class="filter-count">(2)</span></button>
+          <button class="filter-btn" data-filter="area" data-value="文京区" onclick="toggleFilterBtn(this)">文京区 <span class="filter-count">(1)</span></button>
+        </div>
+      </div>
+      
+      <div style="margin-bottom:16px;">
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px;">💰 価格帯 <span style="font-size:0.75rem;font-weight:normal;">（複数選択可）</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="filterPriceBtns">
+          <button class="filter-btn active" data-filter="price" data-value="" onclick="toggleFilterBtn(this)">すべて</button>
+          <button class="filter-btn" data-filter="price" data-value="20000" onclick="toggleFilterBtn(this)">〜2億円 <span class="filter-count">(4)</span></button>
+          <button class="filter-btn" data-filter="price" data-value="30000" onclick="toggleFilterBtn(this)">2〜3億円 <span class="filter-count">(6)</span></button>
+          <button class="filter-btn" data-filter="price" data-value="50000" onclick="toggleFilterBtn(this)">3〜5億円 <span class="filter-count">(14)</span></button>
+          <button class="filter-btn" data-filter="price" data-value="99999" onclick="toggleFilterBtn(this)">5億円〜 <span class="filter-count">(6)</span></button>
+        </div>
+      </div>
+      
+      <div>
+        <div style="font-size:0.85rem;font-weight:600;color:var(--text-muted);margin-bottom:10px;">🏠 間取り <span style="font-size:0.75rem;font-weight:normal;">（複数選択可）</span></div>
+        <div style="display:flex;flex-wrap:wrap;gap:8px;" id="filterLayoutBtns">
+          <button class="filter-btn active" data-filter="layout" data-value="" onclick="toggleFilterBtn(this)">すべて</button>
+          <button class="filter-btn" data-filter="layout" data-value="1LDK" onclick="toggleFilterBtn(this)">1LDK <span class="filter-count">(1)</span></button>
+          <button class="filter-btn" data-filter="layout" data-value="2LDK" onclick="toggleFilterBtn(this)">2LDK <span class="filter-count">(18)</span></button>
+          <button class="filter-btn" data-filter="layout" data-value="3LDK" onclick="toggleFilterBtn(this)">3LDK <span class="filter-count">(11)</span></button>
+        </div>
+      </div>
+    </div>
+    <div id="propertySummary" style="display:grid;grid-template-columns:repeat(5,1fr);gap:12px;margin-bottom:20px;padding:16px;background:var(--bg-dark);border:1px solid var(--border);border-radius:8px;">
+      <div style="text-align:center;"><div style="font-size:0.75rem;color:var(--text-muted);">物件数</div><div style="font-size:1.2rem;font-weight:700;color:var(--text);" id="totalCount">30件</div></div>
+      <div style="text-align:center;"><div style="font-size:0.75rem;color:var(--text-muted);">総額</div><div style="font-size:1.2rem;font-weight:700;color:var(--danger);" id="totalValue">113.7億円</div></div>
+      <div style="text-align:center;"><div style="font-size:0.75rem;color:var(--text-muted);">平均価格</div><div style="font-size:1.2rem;font-weight:700;color:var(--text);" id="avgPrice">3.79億円</div></div>
+      <div style="text-align:center;"><div style="font-size:0.75rem;color:var(--text-muted);">平均坪単価</div><div style="font-size:1.2rem;font-weight:700;color:var(--text);" id="avgTsubo">1,384万円</div></div>
+      <div style="text-align:center;"><div style="font-size:0.75rem;color:var(--text-muted);">平均専有面積</div><div style="font-size:1.2rem;font-weight:700;color:var(--text);" id="avgArea">85.2㎡</div></div>
+    </div>
+    <div style="overflow-x:auto;-webkit-overflow-scrolling:touch;margin:0 -4px;padding:0 4px;">
+    <table id="propertyTable">
+      <thead>
+        <tr>
+          <th style="width:40px;"></th>
+          <th>ステータス</th>
+          <th style="cursor:pointer;" onclick="sortTable(2)">所在地 ↕</th>
+          <th style="cursor:pointer;" onclick="sortTable(3)">物件名 ↕</th>
+          <th>所在階</th>
+          <th>間取り</th>
+          <th>専有面積</th>
+          <th style="cursor:pointer;" onclick="sortTable(7)">価格 ↕</th>
+          <th style="cursor:pointer;" onclick="sortTable(8)">坪単価 ↕</th>
+          <th>築年月</th>
+          <th>最寄駅</th>
+        </tr>
+      </thead>
+      <tbody id="propertyBody">
+        <tr data-area="港区" data-price="89800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-08-15","buyAcceptDate":"2024-08-22","contractDate":"2024-09-10","deliveryDate":"2024-10-15","startDate":"2024-10-20","completeDate":"2024-12-05","saleStartDate":"2024-12-10","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区南青山1丁目</td>
+          <td style="font-weight:600;">パークコート乃木坂ザタワー</td>
+          <td>25階</td>
+          <td>3LDK</td>
+          <td>100.65㎡</td>
+          <td class="price-cell">89,800万円</td>
+          <td>2,949.5万円</td>
+          <td>2019年1月</td>
+          <td>乃木坂 徒歩2分</td>
+        </tr>
+        <tr data-area="渋谷区" data-price="76800" data-layout="1LDK" class="property-row"  data-schedule='{"buyDate":"2024-07-01","buyAcceptDate":"2024-07-08","contractDate":"2024-07-25","deliveryDate":"2024-08-30","startDate":"2024-09-05","completeDate":"2024-11-15","saleStartDate":"2024-11-20","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>渋谷区神宮前4丁目</td>
+          <td style="font-weight:600;">表参道ヒルズ</td>
+          <td>4階</td>
+          <td>1LDK</td>
+          <td>84.78㎡</td>
+          <td class="price-cell">76,800万円</td>
+          <td>2,994.7万円</td>
+          <td>2006年1月</td>
+          <td>表参道 徒歩3分</td>
+        </tr>
+        <tr data-area="千代田区" data-price="74800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-10","buyAcceptDate":"2024-06-17","contractDate":"2024-07-05","deliveryDate":"2024-08-10","startDate":"2024-08-15","completeDate":"2024-10-20","saleStartDate":"2024-10-25","applyDate":"2024-11-30","currentStep":8}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-nego">商談中</span></td>
+          <td>千代田区三番町</td>
+          <td style="font-weight:600;">三番町パークテラス桜苑</td>
+          <td>9階</td>
+          <td>3LDK</td>
+          <td>105.94㎡</td>
+          <td class="price-cell">74,800万円</td>
+          <td>2,334.1万円</td>
+          <td>2005年8月</td>
+          <td>半蔵門 徒歩4分</td>
+        </tr>
+        <tr data-area="港区" data-price="62800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-09-01","buyAcceptDate":"2024-09-08","contractDate":"2024-09-25","deliveryDate":"2024-10-30","startDate":"2024-11-05","completeDate":"2024-12-15","saleStartDate":"2024-12-18","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区虎ノ門3丁目</td>
+          <td style="font-weight:600;">ウェリスタワー愛宕虎ノ門</td>
+          <td>14階</td>
+          <td>3LDK</td>
+          <td>76.31㎡</td>
+          <td class="price-cell">62,800万円</td>
+          <td>2,720.6万円</td>
+          <td>2014年2月</td>
+          <td>神谷町 徒歩2分</td>
+        </tr>
+        <tr data-area="港区" data-price="56800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-05-15","buyAcceptDate":"2024-05-22","contractDate":"2024-06-10","deliveryDate":"2024-07-15","startDate":"2024-07-20","completeDate":"2024-09-25","saleStartDate":"2024-09-30","applyDate":"2024-11-15","saleContractDate":"2024-12-01","currentStep":9}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-nego">商談中</span></td>
+          <td>港区三田1丁目</td>
+          <td style="font-weight:600;">パークコート麻布十番ザタワー</td>
+          <td>33階</td>
+          <td>3LDK</td>
+          <td>88.41㎡</td>
+          <td class="price-cell">56,800万円</td>
+          <td>2,123.9万円</td>
+          <td>2010年5月</td>
+          <td>麻布十番 徒歩3分</td>
+        </tr>
+        <tr data-area="港区" data-price="54800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-10-01","buyAcceptDate":"2024-10-08","contractDate":"2024-10-25","deliveryDate":"2024-11-30","startDate":"2024-12-05","currentStep":5}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-reno">リノベ中</span></td>
+          <td>港区虎ノ門3丁目</td>
+          <td style="font-weight:600;">ウェリスタワー愛宕虎ノ門</td>
+          <td>21階</td>
+          <td>2LDK</td>
+          <td>65.46㎡</td>
+          <td class="price-cell">54,800万円</td>
+          <td>2,767.5万円</td>
+          <td>2014年2月</td>
+          <td>神谷町 徒歩2分</td>
+        </tr>
+        <tr data-area="港区" data-price="44800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-08-01","buyAcceptDate":"2024-08-08","contractDate":"2024-08-25","deliveryDate":"2024-09-30","startDate":"2024-10-05","completeDate":"2024-12-10","saleStartDate":"2024-12-15","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区高輪4丁目</td>
+          <td style="font-weight:600;">THE IMPREST 高輪</td>
+          <td>3階</td>
+          <td>3LDK</td>
+          <td>126.43㎡</td>
+          <td class="price-cell">44,800万円</td>
+          <td>1,171.4万円</td>
+          <td>2017年8月</td>
+          <td>品川 徒歩9分</td>
+        </tr>
+        <tr data-area="港区" data-price="43800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-07-15","buyAcceptDate":"2024-07-22","contractDate":"2024-08-10","deliveryDate":"2024-09-15","startDate":"2024-09-20","completeDate":"2024-11-25","saleStartDate":"2024-11-30","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区赤坂4丁目</td>
+          <td style="font-weight:600;">パークコート赤坂ザ・タワー</td>
+          <td>33階</td>
+          <td>2LDK</td>
+          <td>83.84㎡</td>
+          <td class="price-cell">43,800万円</td>
+          <td>1,727.1万円</td>
+          <td>2009年6月</td>
+          <td>赤坂 徒歩9分</td>
+        </tr>
+        <tr data-area="港区" data-price="42800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-09-15","buyAcceptDate":"2024-09-22","contractDate":"2024-10-10","deliveryDate":"2024-11-15","startDate":"2024-11-20","completeDate":"2024-12-18","currentStep":6}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-reno">リノベ中</span></td>
+          <td>港区西麻布4丁目</td>
+          <td style="font-weight:600;">ディアナガーデン西麻布</td>
+          <td>8階</td>
+          <td>2LDK</td>
+          <td>100.97㎡</td>
+          <td class="price-cell">42,800万円</td>
+          <td>1,401.3万円</td>
+          <td>2018年5月</td>
+          <td>広尾 徒歩12分</td>
+        </tr>
+        <tr data-area="港区" data-price="42800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-01","buyAcceptDate":"2024-06-08","contractDate":"2024-06-25","deliveryDate":"2024-07-30","startDate":"2024-08-05","completeDate":"2024-10-10","saleStartDate":"2024-10-15","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区芝浦4丁目</td>
+          <td style="font-weight:600;">芝浦アイランドケープタワー</td>
+          <td>-</td>
+          <td>3LDK</td>
+          <td>133.58㎡</td>
+          <td class="price-cell">42,800万円</td>
+          <td>1,059.2万円</td>
+          <td>2006年10月</td>
+          <td>田町 徒歩13分</td>
+        </tr>
+        <tr data-area="渋谷区" data-price="38800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-08-20","buyAcceptDate":"2024-08-27","contractDate":"2024-09-15","deliveryDate":"2024-10-20","startDate":"2024-10-25","completeDate":"2024-12-15","saleStartDate":"2024-12-18","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>渋谷区富ヶ谷1丁目</td>
+          <td style="font-weight:600;">フォレセーヌ渋谷富ヶ谷</td>
+          <td>1階</td>
+          <td>2LDK</td>
+          <td>83.90㎡</td>
+          <td class="price-cell">38,800万円</td>
+          <td>1,528.8万円</td>
+          <td>2022年2月</td>
+          <td>代々木公園 徒歩5分</td>
+        </tr>
+        <tr data-area="千代田区" data-price="36800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-07-10","buyAcceptDate":"2024-07-17","contractDate":"2024-08-05","deliveryDate":"2024-09-10","startDate":"2024-09-15","completeDate":"2024-11-20","saleStartDate":"2024-11-25","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>千代田区四番町</td>
+          <td style="font-weight:600;">ザ・パークハウス四番町レジデンス</td>
+          <td>2階</td>
+          <td>3LDK</td>
+          <td>78.70㎡</td>
+          <td class="price-cell">36,800万円</td>
+          <td>1,545.8万円</td>
+          <td>2013年8月</td>
+          <td>市ケ谷 徒歩5分</td>
+        </tr>
+        <tr data-area="中央区" data-price="36800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-10-15","buyAcceptDate":"2024-10-22","contractDate":"2024-11-10","deliveryDate":"2024-12-15","currentStep":4}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-wait">引渡待</span></td>
+          <td>中央区晴海5丁目</td>
+          <td style="font-weight:600;">HARUMI FLAG PARK VILLAGE T棟</td>
+          <td>49階</td>
+          <td>2LDK</td>
+          <td>84.86㎡</td>
+          <td class="price-cell">36,800万円</td>
+          <td>1,433.6万円</td>
+          <td>2025年8月</td>
+          <td>勝どき 徒歩18分</td>
+        </tr>
+        <tr data-area="港区" data-price="35800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-20","buyAcceptDate":"2024-06-27","contractDate":"2024-07-15","deliveryDate":"2024-08-20","startDate":"2024-08-25","completeDate":"2024-10-30","saleStartDate":"2024-11-05","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区芝浦4丁目</td>
+          <td style="font-weight:600;">芝浦アイランドケープタワー</td>
+          <td>46階</td>
+          <td>2LDK</td>
+          <td>101.48㎡</td>
+          <td class="price-cell">35,800万円</td>
+          <td>1,166.3万円</td>
+          <td>2006年12月</td>
+          <td>田町 徒歩13分</td>
+        </tr>
+        <tr data-area="港区" data-price="35800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-09-05","buyAcceptDate":"2024-09-12","contractDate":"2024-09-30","deliveryDate":"2024-11-05","startDate":"2024-11-10","completeDate":"2024-12-20","currentStep":6}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-reno">リノベ中</span></td>
+          <td>港区白金1丁目</td>
+          <td style="font-weight:600;">白金ザ・スカイ</td>
+          <td>12階</td>
+          <td>2LDK</td>
+          <td>76.00㎡</td>
+          <td class="price-cell">35,800万円</td>
+          <td>1,557.2万円</td>
+          <td>2023年2月</td>
+          <td>白金高輪 徒歩3分</td>
+        </tr>
+        <tr data-area="港区" data-price="34500" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-05-01","buyAcceptDate":"2024-05-08","contractDate":"2024-05-25","deliveryDate":"2024-06-30","startDate":"2024-07-05","completeDate":"2024-09-10","saleStartDate":"2024-09-15","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区南麻布1丁目</td>
+          <td style="font-weight:600;">イクシクス麻布十番</td>
+          <td>3階</td>
+          <td>3LDK</td>
+          <td>114.38㎡</td>
+          <td class="price-cell">34,500万円</td>
+          <td>997.2万円</td>
+          <td>1989年11月</td>
+          <td>麻布十番 徒歩9分</td>
+        </tr>
+        <tr data-area="港区" data-price="33800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-04-15","buyAcceptDate":"2024-04-22","contractDate":"2024-05-10","deliveryDate":"2024-06-15","startDate":"2024-06-20","completeDate":"2024-08-25","saleStartDate":"2024-08-30","applyDate":"2024-10-20","saleContractDate":"2024-11-10","saleDeliveryDate":"2024-12-20","currentStep":10}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-done">成約済</span></td>
+          <td>港区三田1丁目</td>
+          <td style="font-weight:600;">パークコート麻布十番ザタワー</td>
+          <td>29階</td>
+          <td>2LDK</td>
+          <td>67.25㎡</td>
+          <td class="price-cell">33,800万円</td>
+          <td>1,661.5万円</td>
+          <td>2010年5月</td>
+          <td>麻布十番 徒歩3分</td>
+        </tr>
+        <tr data-area="港区" data-price="32800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-08-10","buyAcceptDate":"2024-08-17","contractDate":"2024-09-05","deliveryDate":"2024-10-10","startDate":"2024-10-15","completeDate":"2024-12-10","saleStartDate":"2024-12-15","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区赤坂8丁目</td>
+          <td style="font-weight:600;">ヴェーゼント赤坂新坂</td>
+          <td>4階</td>
+          <td>2LDK</td>
+          <td>70.17㎡</td>
+          <td class="price-cell">32,800万円</td>
+          <td>1,545.3万円</td>
+          <td>2001年3月</td>
+          <td>青山一丁目 徒歩4分</td>
+        </tr>
+        <tr data-area="港区" data-price="32800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-07-25","buyAcceptDate":"2024-08-01","contractDate":"2024-08-20","deliveryDate":"2024-09-25","startDate":"2024-09-30","completeDate":"2024-12-05","saleStartDate":"2024-12-10","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区芝浦2丁目</td>
+          <td style="font-weight:600;">ブランズタワー芝浦</td>
+          <td>26階</td>
+          <td>3LDK</td>
+          <td>80.07㎡</td>
+          <td class="price-cell">32,800万円</td>
+          <td>1,354.2万円</td>
+          <td>2021年8月</td>
+          <td>田町 徒歩9分</td>
+        </tr>
+        <tr data-area="渋谷区" data-price="31980" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-15","buyAcceptDate":"2024-06-22","contractDate":"2024-07-10","deliveryDate":"2024-08-15","startDate":"2024-08-20","completeDate":"2024-10-25","saleStartDate":"2024-10-30","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>渋谷区広尾4丁目</td>
+          <td style="font-weight:600;">広尾ガーデンヒルズウエストヒルK棟</td>
+          <td>1階</td>
+          <td>3LDK</td>
+          <td>90.73㎡</td>
+          <td class="price-cell">31,980万円</td>
+          <td>1,165.3万円</td>
+          <td>1985年7月</td>
+          <td>広尾 徒歩5分</td>
+        </tr>
+        <tr data-area="港区" data-price="29800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-09-20","buyAcceptDate":"2024-09-27","contractDate":"2024-10-15","deliveryDate":"2024-11-20","startDate":"2024-11-25","currentStep":5}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-reno">リノベ中</span></td>
+          <td>港区芝浦1丁目</td>
+          <td style="font-weight:600;">GLOBAL FRONT TOWER</td>
+          <td>20階</td>
+          <td>2LDK</td>
+          <td>83.88㎡</td>
+          <td class="price-cell">29,800万円</td>
+          <td>1,174.5万円</td>
+          <td>2015年9月</td>
+          <td>日の出 徒歩8分</td>
+        </tr>
+        <tr data-area="港区" data-price="27800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-05-20","buyAcceptDate":"2024-05-27","contractDate":"2024-06-15","deliveryDate":"2024-07-20","startDate":"2024-07-25","completeDate":"2024-09-30","saleStartDate":"2024-10-05","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区芝浦4丁目</td>
+          <td style="font-weight:600;">芝浦アイランドグローヴタワー</td>
+          <td>46階</td>
+          <td>2LDK</td>
+          <td>83.80㎡</td>
+          <td class="price-cell">27,800万円</td>
+          <td>1,096.7万円</td>
+          <td>2006年11月</td>
+          <td>田町 徒歩9分</td>
+        </tr>
+        <tr data-area="港区" data-price="26800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-08-05","buyAcceptDate":"2024-08-12","contractDate":"2024-08-30","deliveryDate":"2024-10-05","startDate":"2024-10-10","completeDate":"2024-12-15","saleStartDate":"2024-12-18","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区三田2丁目</td>
+          <td style="font-weight:600;">ザ・レジデンス三田</td>
+          <td>2階</td>
+          <td>2LDK</td>
+          <td>71.42㎡</td>
+          <td class="price-cell">26,800万円</td>
+          <td>1,240.5万円</td>
+          <td>2014年11月</td>
+          <td>赤羽橋 徒歩6分</td>
+        </tr>
+        <tr data-area="港区" data-price="25800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-07-01","buyAcceptDate":"2024-07-08","contractDate":"2024-07-25","deliveryDate":"2024-08-30","startDate":"2024-09-05","completeDate":"2024-11-10","saleStartDate":"2024-11-15","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区浜松町1丁目</td>
+          <td style="font-weight:600;">パークコート浜離宮 ザ タワー</td>
+          <td>13階</td>
+          <td>2LDK</td>
+          <td>55.07㎡</td>
+          <td class="price-cell">25,800万円</td>
+          <td>1,548.8万円</td>
+          <td>2019年2月</td>
+          <td>浜松町 徒歩5分</td>
+        </tr>
+        <tr data-area="港区" data-price="25300" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-25","buyAcceptDate":"2024-07-02","contractDate":"2024-07-20","deliveryDate":"2024-08-25","startDate":"2024-08-30","completeDate":"2024-11-05","saleStartDate":"2024-11-10","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>港区芝浦4丁目</td>
+          <td style="font-weight:600;">芝浦アイランドケープタワー</td>
+          <td>32階</td>
+          <td>3LDK</td>
+          <td>104.60㎡</td>
+          <td class="price-cell">25,300万円</td>
+          <td>799.6万円</td>
+          <td>2006年10月</td>
+          <td>田町 徒歩13分</td>
+        </tr>
+        <tr data-area="港区" data-price="21800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-10-10","buyAcceptDate":"2024-10-17","contractDate":"2024-11-05","deliveryDate":"2024-12-10","startDate":"2024-12-15","currentStep":5}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-reno">リノベ中</span></td>
+          <td>港区芝浦4丁目</td>
+          <td style="font-weight:600;">プラウドタワー芝浦</td>
+          <td>23階</td>
+          <td>2LDK</td>
+          <td>68.48㎡</td>
+          <td class="price-cell">21,800万円</td>
+          <td>1,052.4万円</td>
+          <td>2023年1月</td>
+          <td>田町 徒歩12分</td>
+        </tr>
+        <tr data-area="中央区" data-price="19800" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-04-01","buyAcceptDate":"2024-04-08","contractDate":"2024-04-25","deliveryDate":"2024-05-30","startDate":"2024-06-05","completeDate":"2024-08-10","saleStartDate":"2024-08-15","applyDate":"2024-10-01","saleContractDate":"2024-10-20","currentStep":9}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-nego">商談中</span></td>
+          <td>中央区晴海2丁目</td>
+          <td style="font-weight:600;">パークタワー晴海</td>
+          <td>13階</td>
+          <td>3LDK</td>
+          <td>77.61㎡</td>
+          <td class="price-cell">19,800万円</td>
+          <td>843.4万円</td>
+          <td>2019年2月</td>
+          <td>月島 徒歩11分</td>
+        </tr>
+        <tr data-area="中央区" data-price="16800" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-11-01","buyAcceptDate":"2024-11-08","contractDate":"2024-11-25","currentStep":3}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-contract">契約中</span></td>
+          <td>中央区晴海5丁目</td>
+          <td style="font-weight:600;">HARUMI FLAG SUN VILLAGE T棟</td>
+          <td>41階</td>
+          <td>2LDK</td>
+          <td>66.00㎡</td>
+          <td class="price-cell">16,800万円</td>
+          <td>841.5万円</td>
+          <td>2025年8月</td>
+          <td>勝どき 徒歩18分</td>
+        </tr>
+        <tr data-area="文京区" data-price="16480" data-layout="3LDK" class="property-row"  data-schedule='{"buyDate":"2024-05-10","buyAcceptDate":"2024-05-17","contractDate":"2024-06-05","deliveryDate":"2024-07-10","startDate":"2024-07-15","completeDate":"2024-09-20","saleStartDate":"2024-09-25","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>文京区千石1丁目</td>
+          <td style="font-weight:600;">グランフラッツ文京・千石</td>
+          <td>2階</td>
+          <td>3LDK</td>
+          <td>77.10㎡</td>
+          <td class="price-cell">16,480万円</td>
+          <td>706.7万円</td>
+          <td>2002年4月</td>
+          <td>千石 徒歩4分</td>
+        </tr>
+        <tr data-area="中央区" data-price="16480" data-layout="2LDK" class="property-row"  data-schedule='{"buyDate":"2024-06-05","buyAcceptDate":"2024-06-12","contractDate":"2024-06-30","deliveryDate":"2024-08-05","startDate":"2024-08-10","completeDate":"2024-10-15","saleStartDate":"2024-10-20","currentStep":7}'>
+          <td class="expand-cell"><span class="expand-icon">▶</span></td>
+          <td><span class="status-tag status-sale">販売中</span></td>
+          <td>中央区晴海2丁目</td>
+          <td style="font-weight:600;">パークタワー晴海</td>
+          <td>17階</td>
+          <td>2LDK</td>
+          <td>70.09㎡</td>
+          <td class="price-cell">16,480万円</td>
+          <td>777.3万円</td>
+          <td>2019年2月</td>
+          <td>月島 徒歩11分</td>
+        </tr>
+      </tbody>
+    </table>
+    </div>
+    <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;padding-top:16px;border-top:1px solid var(--border);">
+      <span style="font-size:0.85rem;color:var(--text-muted);" id="displayCount">全30件を表示</span>
+      <div style="font-size:0.8rem;color:var(--text-muted);">※ REINSデータより（株）ゼニアス物件を抽出</div>
+    </div>
+  </div>
+
+  <!-- Row 6:担当者パフォーマンス -->
+  <div class="card">
+    <div class="card-header">
+      <div class="card-title">👥 担当者別パフォーマンス</div>
+      <div class="card-actions">
+        <button class="card-action-btn">今月</button>
+        <button class="card-action-btn">四半期</button>
+        <button class="card-action-btn">年間</button>
+      </div>
+    </div>
+    <table>
+      <thead>
+        <tr>
+          <th>担当者</th>
+          <th>担当物件数</th>
+          <th>成約件数</th>
+          <th>成約率</th>
+          <th>総粗利</th>
+          <th>平均粗利率</th>
+          <th>平均成約日数</th>
+          <th>評価</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td style="font-weight:600;">佐藤 健一</td>
+          <td>8件</td>
+          <td>6件</td>
+          <td style="color:var(--success);font-weight:600;">75.0%</td>
+          <td class="profit-cell">4.2億円</td>
+          <td style="color:var(--success);font-weight:600;">24.8%</td>
+          <td>68日</td>
+          <td><span style="background:#d1fae5;color:#065f46;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">🏆 MVP</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">狩野内 豊</td>
+          <td>7件</td>
+          <td>5件</td>
+          <td style="color:var(--success);font-weight:600;">71.4%</td>
+          <td class="profit-cell">3.8億円</td>
+          <td style="color:var(--success);font-weight:600;">23.1%</td>
+          <td>82日</td>
+          <td><span style="background:#dbeafe;color:#1e40af;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">⭐ 優秀</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">田中 美咲</td>
+          <td>7件</td>
+          <td>4件</td>
+          <td>57.1%</td>
+          <td class="profit-cell">2.9億円</td>
+          <td>21.5%</td>
+          <td>95日</td>
+          <td><span style="background:#f3f4f6;color:#6b7280;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">標準</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">鈴木 一郎</td>
+          <td>6件</td>
+          <td>3件</td>
+          <td style="color:var(--warning);">50.0%</td>
+          <td class="profit-cell">2.1億円</td>
+          <td>19.8%</td>
+          <td>112日</td>
+          <td><span style="background:#fef3c7;color:#92400e;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">要改善</span></td>
+        </tr>
+        <tr>
+          <td style="font-weight:600;">山本 太郎</td>
+          <td>5件</td>
+          <td>2件</td>
+          <td style="color:var(--danger);">40.0%</td>
+          <td class="profit-cell">1.5億円</td>
+          <td style="color:var(--danger);">16.2%</td>
+          <td style="color:var(--danger);">145日</td>
+          <td><span style="background:#fee2e2;color:#991b1b;padding:4px 10px;border-radius:20px;font-size:0.75rem;font-weight:600;">⚠️ 注意</span></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+</div>
+
+<!-- Tooltip -->
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+// Period Filter
+function setPeriod(btn, period) {
+  document.querySelectorAll('.period-btn').forEach(b => b.classList.remove('active'));
+  btn.classList.add('active');
+  
+  const today = new Date();
+  let startDate = new Date();
+  
+  switch(period) {
+    case 'month':
+      startDate = new Date(today.getFullYear(), today.getMonth(), 1);
+      break;
+    case 'quarter':
+      const quarter = Math.floor(today.getMonth() / 3);
+      startDate = new Date(today.getFullYear(), quarter * 3, 1);
+      break;
+    case 'half':
+      const half = today.getMonth() < 6 ? 0 : 6;
+      startDate = new Date(today.getFullYear(), half, 1);
+      break;
+    case 'year':
+      startDate = new Date(today.getFullYear(), 0, 1);
+      break;
+  }
+  
+  // Update date inputs
+  document.querySelector('.date-range input:first-of-type').value = startDate.toISOString().split('T')[0];
+}
+
+// Tab switching
+function showTab(tab) {
+  document.querySelectorAll('.tab').forEach(t => t.classList.remove('active'));
+  event.target.classList.add('active');
+}
+
+// Tooltip functionality
+const tooltip = document.getElementById('tooltip');
+
+document.querySelectorAll('.bar').forEach(bar => {
+  bar.addEventListener('mouseenter', (e) => {
+    const value = bar.dataset.value;
+    tooltip.textContent = value;
+    tooltip.classList.add('visible');
+  });
+  
+  bar.addEventListener('mousemove', (e) => {
+    tooltip.style.left = e.pageX + 10 + 'px';
+    tooltip.style.top = e.pageY - 30 + 'px';
+  });
+  
+  bar.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+  });
+});
+
+document.querySelectorAll('.heatmap-cell').forEach(cell => {
+  cell.addEventListener('mouseenter', (e) => {
+    const count = cell.dataset.count;
+    const profit = cell.dataset.profit;
+    if (count !== '0') {
+      tooltip.textContent = `${count}件 / 粗利率: ${profit}`;
+      tooltip.classList.add('visible');
+    }
+  });
+  
+  cell.addEventListener('mousemove', (e) => {
+    tooltip.style.left = e.pageX + 10 + 'px';
+    tooltip.style.top = e.pageY - 30 + 'px';
+  });
+  
+  cell.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+  });
+});
+
+document.querySelectorAll('.line-chart-dot').forEach(dot => {
+  dot.addEventListener('mouseenter', (e) => {
+    const months = ['7月', '8月', '9月', '10月', '11月', '12月'];
+    const values = ['18.2%', '20.5%', '19.1%', '21.8%', '23.5%', '25.2%'];
+    const index = Array.from(document.querySelectorAll('.line-chart-dot')).indexOf(dot);
+    tooltip.textContent = `${months[index]}: ${values[index]}`;
+    tooltip.classList.add('visible');
+  });
+  
+  dot.addEventListener('mousemove', (e) => {
+    tooltip.style.left = e.pageX + 10 + 'px';
+    tooltip.style.top = e.pageY - 30 + 'px';
+  });
+  
+  dot.addEventListener('mouseleave', () => {
+    tooltip.classList.remove('visible');
+  });
+});
+
+// Animate KPI progress bars on load
+document.addEventListener('DOMContentLoaded', () => {
+  document.querySelectorAll('.kpi-progress-bar').forEach(bar => {
+    const width = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(() => {
+      bar.style.width = width;
+    }, 500);
+  });
+});
+
+// Filter state
+let selectedFilters = {
+  area: [],
+  price: [],
+  layout: []
+};
+
+// Toggle Filter Button
+function toggleFilterBtn(btn) {
+  const filterType = btn.dataset.filter;
+  const value = btn.dataset.value;
+  const container = btn.parentElement;
+  const allBtn = container.querySelector('[data-value=""]');
+  
+  if (value === '') {
+    // "すべて" clicked - clear other selections
+    container.querySelectorAll('.filter-btn').forEach(b => {
+      b.classList.remove('active', 'selected');
+    });
+    btn.classList.add('active');
+    selectedFilters[filterType] = [];
+  } else {
+    // Specific filter clicked
+    allBtn.classList.remove('active');
+    
+    if (btn.classList.contains('selected')) {
+      // Deselect
+      btn.classList.remove('selected');
+      selectedFilters[filterType] = selectedFilters[filterType].filter(v => v !== value);
+      
+      // If nothing selected, activate "すべて"
+      if (selectedFilters[filterType].length === 0) {
+        allBtn.classList.add('active');
+      }
+    } else {
+      // Select
+      btn.classList.add('selected');
+      selectedFilters[filterType].push(value);
+    }
+  }
+  
+  filterProperties();
+}
+
+// Property Filter Function
+function filterProperties() {
+  const rows = document.querySelectorAll('#propertyBody tr[data-area]');
+  let visibleCount = 0;
+  let totalPrice = 0;
+  let totalTsubo = 0;
+  let totalArea = 0;
+  
+  // Close all timelines when filtering
+  document.querySelectorAll('.timeline-row').forEach(tr => tr.remove());
+  document.querySelectorAll('#propertyBody tr.expanded').forEach(tr => tr.classList.remove('expanded'));
+  
+  rows.forEach(row => {
+    const area = row.dataset.area;
+    const price = parseInt(row.dataset.price);
+    const layout = row.dataset.layout;
+    
+    // Area filter
+    let showArea = selectedFilters.area.length === 0 || selectedFilters.area.includes(area);
+    
+    // Price filter
+    let showPrice = true;
+    if (selectedFilters.price.length > 0) {
+      showPrice = selectedFilters.price.some(priceRange => {
+        const limit = parseInt(priceRange);
+        if (limit === 20000) return price <= 20000;
+        if (limit === 30000) return price > 20000 && price <= 30000;
+        if (limit === 50000) return price > 30000 && price <= 50000;
+        if (limit === 99999) return price > 50000;
+        return false;
+      });
+    }
+    
+    // Layout filter
+    let showLayout = selectedFilters.layout.length === 0 || selectedFilters.layout.includes(layout);
+    
+    if (showArea && showPrice && showLayout) {
+      row.style.display = '';
+      visibleCount++;
+      totalPrice += price;
+      
+      // Extract tsubo price from row (column index 8 with expand-cell and status column)
+      const tsuboCell = row.cells[8].textContent.replace(/[,万円]/g, '');
+      totalTsubo += parseFloat(tsuboCell) || 0;
+      
+      // Extract area from row (column index 6 with expand-cell and status column)
+      const areaCell = row.cells[6].textContent.replace(/[㎡]/g, '');
+      totalArea += parseFloat(areaCell) || 0;
+    } else {
+      row.style.display = 'none';
+    }
+  });
+  
+  // Update summary
+  document.getElementById('totalCount').textContent = visibleCount + '件';
+  document.getElementById('totalValue').textContent = (totalPrice / 10000).toFixed(1) + '億円';
+  document.getElementById('avgPrice').textContent = visibleCount > 0 ? ((totalPrice / visibleCount) / 10000).toFixed(2) + '億円' : '-';
+  document.getElementById('avgTsubo').textContent = visibleCount > 0 ? Math.round(totalTsubo / visibleCount).toLocaleString() + '万円' : '-';
+  document.getElementById('avgArea').textContent = visibleCount > 0 ? (totalArea / visibleCount).toFixed(1) + '㎡' : '-';
+  
+  // Update display count text
+  const hasFilters = selectedFilters.area.length > 0 || selectedFilters.price.length > 0 || selectedFilters.layout.length > 0;
+  document.getElementById('displayCount').textContent = hasFilters ? 
+    visibleCount + '件を表示（フィルタ適用中）' : 
+    '全30件を表示';
+}
+
+// Sort Table Function
+let sortDirection = {};
+function sortTable(columnIndex) {
+  const table = document.getElementById('propertyTable');
+  const tbody = document.getElementById('propertyBody');
+  const rows = Array.from(tbody.querySelectorAll('tr'));
+  
+  sortDirection[columnIndex] = !sortDirection[columnIndex];
+  const direction = sortDirection[columnIndex] ? 1 : -1;
+  
+  rows.sort((a, b) => {
+    let aVal = a.cells[columnIndex].textContent.trim();
+    let bVal = b.cells[columnIndex].textContent.trim();
+    
+    // Handle price columns (remove commas and 万円)
+    if (columnIndex === 6 || columnIndex === 7) {
+      aVal = parseFloat(aVal.replace(/[,万円]/g, '')) || 0;
+      bVal = parseFloat(bVal.replace(/[,万円]/g, '')) || 0;
+      return (aVal - bVal) * direction;
+    }
+    
+    return aVal.localeCompare(bVal, 'ja') * direction;
+  });
+  
+  rows.forEach(row => tbody.appendChild(row));
+}
+
+// Export CSV Function
+function exportCSV() {
+  const table = document.getElementById('propertyTable');
+  const rows = table.querySelectorAll('tr');
+  let csv = [];
+  
+  rows.forEach(row => {
+    if (row.style.display !== 'none' && !row.classList.contains('timeline-row')) {
+      const cols = row.querySelectorAll('td, th');
+      const rowData = Array.from(cols).map(col => '"' + col.textContent.trim().replace(/"/g, '""') + '"');
+      csv.push(rowData.join(','));
+    }
+  });
+  
+  const csvContent = '\uFEFF' + csv.join('\n');
+  const blob = new Blob([csvContent], { type: 'text/csv;charset=utf-8;' });
+  const link = document.createElement('a');
+  link.href = URL.createObjectURL(blob);
+  link.download = 'zenias_properties_' + new Date().toISOString().slice(0,10) + '.csv';
+  link.click();
+}
+
+// Timeline Steps Definition
+const timelineSteps = [
+  { id: 'purchase_offer', label: '買付', icon: '📝', section: 'purchase' },
+  { id: 'purchase_accept', label: '買付承諾', icon: '✅', section: 'purchase' },
+  { id: 'purchase_contract', label: '契約', icon: '📄', section: 'purchase' },
+  { id: 'purchase_delivery', label: '引渡し', icon: '🔑', section: 'purchase' },
+  { id: 'reno_start', label: '着工', icon: '🔨', section: 'renovation' },
+  { id: 'reno_complete', label: '完工', icon: '🏠', section: 'renovation' },
+  { id: 'sale_start', label: '販売開始', icon: '🏷️', section: 'sale' },
+  { id: 'sale_application', label: '申込', icon: '📋', section: 'sale' },
+  { id: 'sale_contract', label: '契約', icon: '📄', section: 'sale' },
+  { id: 'sale_delivery', label: '引渡し', icon: '🎉', section: 'sale' }
+];
+
+// Generate random dates for demo
+function generateTimelineDates(propertyIndex) {
+  const baseDate = new Date('2024-06-01');
+  baseDate.setDate(baseDate.getDate() + propertyIndex * 15); // Stagger by property
+  
+  const dates = [];
+  let currentDate = new Date(baseDate);
+  
+  // Generate dates for each step
+  const intervals = [0, 3, 14, 30, 45, 90, 100, null, null, null]; // Days between steps
+  
+  intervals.forEach((interval, i) => {
+    if (interval !== null) {
+      currentDate = new Date(currentDate);
+      currentDate.setDate(currentDate.getDate() + interval);
+      dates.push(currentDate.toLocaleDateString('ja-JP', { month: 'short', day: 'numeric' }));
+    } else {
+      dates.push(null);
+    }
+  });
+  
+  return dates;
+}
+
+// Get current step based on status (for demo, all are "販売中" = step 7)
+function getCurrentStep(status) {
+  // 販売中 = 販売開始完了、申込待ち
+  return 6; // Index of 販売開始 (0-based)
+}
+
+// Create timeline HTML
+function createTimelineHTML(propertyIndex, propertyName) {
+  const dates = generateTimelineDates(propertyIndex);
+  const currentStep = 6; // 販売開始済み
+  
+  let html = `
+    <div class="timeline-container">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:20px;">
+        <div style="font-size:0.95rem;font-weight:600;color:var(--text);">
+          📅 ${propertyName} - スケジュール
+        </div>
+        <div style="display:flex;gap:16px;font-size:0.75rem;">
+          <span style="display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;background:var(--success);border-radius:50%;"></span> 完了
+          </span>
+          <span style="display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;background:var(--accent);border-radius:50%;"></span> 現在
+          </span>
+          <span style="display:flex;align-items:center;gap:4px;">
+            <span style="width:12px;height:12px;background:#e2e8f0;border-radius:50%;"></span> 予定
+          </span>
+        </div>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:12px;">
+        <span class="timeline-section-label section-purchase" style="position:static;">🏢 仕入れ</span>
+        <span class="timeline-section-label section-renovation" style="position:static;">🔧 リノベ</span>
+        <span class="timeline-section-label section-sale" style="position:static;">💰 販売</span>
+      </div>
+      <div class="timeline">
+  `;
+  
+  timelineSteps.forEach((step, index) => {
+    let status = 'pending';
+    if (index < currentStep) status = 'completed';
+    else if (index === currentStep) status = 'current';
+    
+    const date = dates[index] || '—';
+    
+    html += `
+      <div class="timeline-item ${status}">
+        <div class="timeline-icon">${status === 'completed' ? '✓' : step.icon}</div>
+        <div class="timeline-label">${step.label}</div>
+        <div class="timeline-date">${date}</div>
+      </div>
+    `;
+  });
+  
+  html += `
+      </div>
+    </div>
+  `;
+  
+  return html;
+}
+
+// Toggle timeline dropdown
+function toggleTimeline(row, index) {
+  const tbody = document.getElementById('propertyBody');
+  const existingTimeline = row.nextElementSibling;
+  
+  // Close all other timelines
+  document.querySelectorAll('.timeline-row').forEach(tr => {
+    tr.classList.remove('show');
+    tr.previousElementSibling?.classList.remove('expanded');
+  });
+  
+  // If clicking the same row, just close it
+  if (existingTimeline && existingTimeline.classList.contains('timeline-row')) {
+    if (existingTimeline.classList.contains('show')) {
+      existingTimeline.classList.remove('show');
+      row.classList.remove('expanded');
+      return;
+    }
+  }
+  
+  // Remove existing timeline rows
+  document.querySelectorAll('.timeline-row').forEach(tr => tr.remove());
+  
+  // Create new timeline row
+  const propertyName = row.cells[3].textContent;
+  const timelineRow = document.createElement('tr');
+  timelineRow.className = 'timeline-row show';
+  timelineRow.innerHTML = `<td colspan="11">${createTimelineHTML(index, propertyName)}</td>`;
+  
+  row.classList.add('expanded');
+  row.after(timelineRow);
+}
+
+// Initialize property row click handlers
+document.addEventListener('DOMContentLoaded', () => {
+  const rows = document.querySelectorAll('#propertyBody tr[data-area]');
+  rows.forEach((row, index) => {
+    // Handle both touch and click
+    const handleInteraction = (e) => {
+      // Prevent default only for touch to avoid scroll issues
+      if (e.type === 'touchend') {
+        e.preventDefault();
+      }
+      toggleTimeline(row, index);
+    };
+    
+    row.addEventListener('click', handleInteraction);
+    row.addEventListener('touchend', handleInteraction);
+    
+    // Prevent double-tap zoom on iOS
+    row.style.touchAction = 'manipulation';
+    row.style.webkitTapHighlightColor = 'transparent';
+    row.style.userSelect = 'none';
+    row.style.webkitUserSelect = 'none';
+  });
+  
+  // Make tabs touch-friendly
+  document.querySelectorAll('.tab').forEach(tab => {
+    tab.style.touchAction = 'manipulation';
+    tab.style.webkitTapHighlightColor = 'transparent';
+  });
+  
+  // Make filter buttons touch-friendly
+  document.querySelectorAll('.filter-btn').forEach(btn => {
+    btn.style.touchAction = 'manipulation';
+    btn.style.webkitTapHighlightColor = 'transparent';
+  });
+  
+  // Make period buttons touch-friendly
+  document.querySelectorAll('.period-btn').forEach(btn => {
+    btn.style.touchAction = 'manipulation';
+    btn.style.webkitTapHighlightColor = 'transparent';
+  });
+  
+  // Initialize KPI progress bars animation
+  document.querySelectorAll('.kpi-progress-bar').forEach(bar => {
+    const width = bar.style.width;
+    bar.style.width = '0';
+    setTimeout(() => {
+      bar.style.width = width;
+    }, 500);
+  });
+});
+</script>
+</body>
+</html>
