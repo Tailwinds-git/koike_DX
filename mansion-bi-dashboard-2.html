@@ -2676,33 +2676,27 @@ function createTimelineHTML(propertyIndex, propertyName) {
 
 // Toggle timeline dropdown
 function toggleTimeline(row, index) {
-  const tbody = document.getElementById('propertyBody');
   const existingTimeline = row.nextElementSibling;
-  
+
+  // If clicking the same row that's already open, close it
+  if (existingTimeline && existingTimeline.classList.contains('timeline-row')) {
+    existingTimeline.remove();
+    row.classList.remove('expanded');
+    return;
+  }
+
   // Close all other timelines
   document.querySelectorAll('.timeline-row').forEach(tr => {
-    tr.classList.remove('show');
     tr.previousElementSibling?.classList.remove('expanded');
+    tr.remove();
   });
-  
-  // If clicking the same row, just close it
-  if (existingTimeline && existingTimeline.classList.contains('timeline-row')) {
-    if (existingTimeline.classList.contains('show')) {
-      existingTimeline.classList.remove('show');
-      row.classList.remove('expanded');
-      return;
-    }
-  }
-  
-  // Remove existing timeline rows
-  document.querySelectorAll('.timeline-row').forEach(tr => tr.remove());
-  
+
   // Create new timeline row
   const propertyName = row.cells[3].textContent;
   const timelineRow = document.createElement('tr');
   timelineRow.className = 'timeline-row show';
   timelineRow.innerHTML = `<td colspan="11">${createTimelineHTML(index, propertyName)}</td>`;
-  
+
   row.classList.add('expanded');
   row.after(timelineRow);
 }
